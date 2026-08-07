@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunshine & Co. Vacation Bureau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%230B3438'/%3E%3Cpath d='M20 10 L23 17 L30.5 17 L24.5 21.5 L27 29 L20 24.5 L13 29 L15.5 21.5 L9.5 17 L17 17 Z' fill='%23D89A2E'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --paper:#EFE2C4; --paper-light:#FFFBF2; --ink:#152420;
+    --teal:#0C6E6A; --teal-light:#D3F0E9; --teal-dark:#083F3F; --teal-glow:#14B8A6;
+    --mustard:#E8A324; --mustard-light:#FBEBC0; --mustard-deep:#B8790F; --gold-glow:#FFCF4D;
+    --rust:#E24E2E; --rust-light:#FBDCCF; --rust-glow:#FF7048;
+    --pop:#FF3D68; --pop-light:#FFE0E8;
+    --line:#D8C79B; --line-soft:#ECDFB9;
+    --shadow:0 1px 2px rgba(15,36,32,.08), 0 6px 18px rgba(15,36,32,.09);
+    --shadow-lift:0 10px 28px rgba(15,36,32,.2);
+    --shadow-deep:0 24px 56px rgba(8,63,63,.32);
+    --glow-teal:0 0 0 1px rgba(20,184,166,.35), 0 8px 24px rgba(20,184,166,.35);
+    --glow-gold:0 0 0 1px rgba(255,207,77,.4), 0 8px 22px rgba(232,163,36,.4);
+    --glow-rust:0 0 0 1px rgba(255,112,72,.35), 0 8px 22px rgba(226,78,46,.35);
+    --ease:cubic-bezier(.34,1.3,.4,1);
+    --ease-smooth:cubic-bezier(.4,0,.2,1);
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+    --sans:'Work Sans',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; color:var(--ink); font-family:var(--serif);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(circle at 12% 0%, rgba(20,184,166,.13), transparent 42%),
+      radial-gradient(circle at 100% 15%, rgba(255,61,104,.06), transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(232,163,36,.16), transparent 45%),
+      linear-gradient(180deg, var(--paper) 0%, #E6D8B4 100%);
+    background-attachment:fixed, fixed, fixed, fixed, fixed;
+    background-size:180px 180px, 140% 140%, 140% 140%, 140% 140%, 100% 100%;
+    animation:ambientDrift 22s ease-in-out infinite alternate;
+    min-height:100vh;
+  }
+  @keyframes ambientDrift{
+    0%{ background-position:0 0, 0% 0%, 100% 0%, 100% 100%, 0 0; }
+    100%{ background-position:0 0, 10% 10%, 90% 15%, 85% 90%, 0 0; }
+  }
+  .sans{ font-family:var(--sans); }
+  .app{ max-width:1180px; margin:0 auto; padding:26px 24px 80px; animation:fadeUp .35s ease-out; }
+  @media (max-width:600px){
+    .app{ padding:14px 12px 60px; }
+    .brand{ flex-wrap:wrap; gap:8px; }
+    .brand h1{ font-size:18px; }
+    .brand .tag{ display:none; }
+    .mark{ width:26px; height:26px; }
+    .home-hero h1{ font-size:30px; }
+    .home-hero .sub{ font-size:12.5px; }
+    .client-card, .report, .brief-panel{ padding:20px 18px; margin:20px auto; }
+    .grade-box .grade{ width:90px; height:90px; font-size:38px; }
+    .topbar, .day-controls, .prefs-strip, .subnav{ gap:8px; }
+    .subnav{ flex-wrap:wrap; }
+    .subnav button{ flex:1 1 40%; }
+    .planner{ gap:14px; }
+    .slot-row{ grid-template-columns:58px 1fr; }
+    .slot-time{ font-size:10.5px; padding:12px 6px 12px 2px; }
+    .stub{ padding:9px 10px; font-size:11.5px; flex-wrap:wrap; }
+    .card{ padding:10px 11px; }
+    .drawer{ padding:20px 18px; width:100%; }
+    .home-panels{ grid-template-columns:1fr; }
+    .day-controls select{ font-size:13px; }
+    .tray{ max-height:none; }
+  }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+  ::selection{ background:var(--mustard-light); }
+
+  .brand{ display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:22px; }
+  .brand-left{ display:flex; align-items:center; gap:12px; }
+  .brand h1{ font-size:24px; letter-spacing:.3px; margin:0; font-weight:600; }
+  .brand h1 a{ transition:opacity .15s; display:flex; align-items:center; gap:12px; }
+  .brand h1 a:hover{ opacity:.68; }
+  .brand .tag{ font-family:var(--sans); font-size:11px; color:var(--teal-dark); letter-spacing:.8px; font-weight:600; text-transform:uppercase; }
+  .mark{ width:34px; height:34px; flex-shrink:0; }
+
+  button{ font-family:var(--sans); cursor:pointer; border-radius:8px; transition:background .25s var(--ease-smooth),box-shadow .3s var(--ease),transform .25s var(--ease),opacity .18s; }
+  .btn{ background:linear-gradient(155deg, var(--teal-glow), var(--teal-dark)); color:var(--paper-light); border:none; padding:11px 22px; font-size:13px; letter-spacing:.5px; font-weight:600; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+  .btn::after{ content:""; position:absolute; inset:0; background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); background-size:250% 100%; background-position:150% 0; transition:background-position .5s var(--ease-smooth); }
+  .btn:hover::after{ background-position:-50% 0; }
+  .btn:hover{ box-shadow:var(--glow-teal); transform:translateY(-2px) scale(1.015); }
+  .btn:active{ transform:translateY(0) scale(.99); }
+  .btn.secondary{ background:var(--paper-light); color:var(--teal-dark); border:1.5px solid var(--teal); box-shadow:none; }
+  .btn.secondary:hover{ background:var(--teal-light); box-shadow:var(--glow-teal); transform:translateY(-2px); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  /* ---------- CLIENT CARD ---------- */
+  .client-card{
+    background:var(--paper-light); border:1px solid var(--line-soft); border-radius:16px;
+    padding:32px 36px; max-width:640px; margin:40px auto;
+    box-shadow:var(--shadow-deep);
+    position:relative;
+  }
+  .client-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:5px; border-radius:16px 16px 0 0; background:linear-gradient(90deg, var(--teal), var(--pop), var(--mustard), var(--rust)); background-size:200% 100%; animation:gradientSweep 4s linear infinite; }
+  .client-card .eyebrow{ font-family:var(--sans); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--rust); margin-bottom:8px; font-weight:700; }
+  .client-card h2{ margin:0 0 18px; font-size:30px; font-weight:600; }
+  .client-row{ display:flex; gap:28px; flex-wrap:wrap; margin-bottom:18px; font-family:var(--sans); font-size:13px; }
+  .client-row div b{ display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.7px; color:var(--teal-dark); margin-bottom:3px; font-weight:700; }
+  .pill-list{ display:flex; flex-wrap:wrap; gap:7px; margin-top:5px; }
+  .pill{ font-family:var(--sans); font-size:11.5px; padding:6px 13px; border-radius:20px; border:1px solid; font-weight:700; transition:transform .2s var(--ease),box-shadow .2s var(--ease); }
+  .pill:hover{ transform:translateY(-2px) scale(1.04); }
+  .pill.want{ background:linear-gradient(155deg,var(--teal-light),#BFE8DF); border-color:var(--teal); color:var(--teal-dark); }
+  .pill.want:hover{ box-shadow:var(--glow-teal); }
+  .pill.avoid{ background:linear-gradient(155deg,var(--rust-light),#F5C4AE); border-color:var(--rust); color:#9c3a1f; }
+  .pill.avoid:hover{ box-shadow:var(--glow-rust); }
+  .client-actions{ display:flex; gap:10px; margin-top:26px; }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .client-chip{ font-family:var(--sans); font-size:12.5px; font-weight:500; background:var(--paper-light); border:1px solid var(--line-soft); border-radius:10px; padding:10px 18px; box-shadow:var(--shadow); }
+  .client-chip b{ color:var(--teal-dark); font-weight:700; }
+  .budget-pill{ font-family:var(--sans); background:linear-gradient(155deg,var(--mustard-light),#F1DB9E); border:1px solid var(--mustard); border-radius:20px; padding:10px 20px; font-size:13px; font-weight:700; cursor:pointer; transition:box-shadow .25s var(--ease),transform .25s var(--ease); box-shadow:var(--shadow); }
+  .budget-pill:hover{ box-shadow:var(--glow-gold); transform:translateY(-2px) scale(1.02); }
+  .budget-pill.over{ background:linear-gradient(155deg,var(--rust-light),#F0C7B4); border-color:var(--rust); color:#9c3a1f; animation:pulseGlow 1.8s ease-in-out infinite; }
+  @keyframes pulseGlow{ 0%,100%{ box-shadow:var(--shadow); } 50%{ box-shadow:var(--glow-rust); } }
+
+  /* ---------- TABS ---------- */
+  .tabs{ display:flex; gap:5px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab{
+    font-family:var(--sans); font-size:12.5px; font-weight:600; padding:10px 18px 11px;
+    background:var(--paper-light); border:1px solid var(--line-soft); border-bottom:none;
+    border-radius:10px 10px 0 0; position:relative; top:1px; cursor:pointer;
+    transition:background .25s var(--ease-smooth),color .25s var(--ease-smooth),box-shadow .25s var(--ease);
+  }
+  .tab:hover{ background:var(--teal-light); }
+  .tab.active{ background:linear-gradient(155deg,var(--teal-glow),var(--teal-dark)); color:var(--paper-light); border-color:var(--teal-dark); box-shadow:var(--glow-teal); }
+  .tab .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--pop); margin-left:7px; box-shadow:0 0 6px rgba(255,61,104,.6); }
+  .tab.active .dot{ background:var(--paper-light); box-shadow:none; }
+
+  /* ---------- DAY CONTROLS ---------- */
+  .day-controls{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--paper-light); border:1px solid var(--line-soft); border-radius:14px; padding:14px 18px; margin-bottom:16px; font-family:var(--sans); font-size:12.5px; box-shadow:var(--shadow); }
+  .day-controls label{ display:flex; align-items:center; gap:6px; font-weight:500; }
+  select{ font-family:var(--sans); padding:7px 11px; border-radius:7px; border:1px solid var(--line); background:#fff; font-size:12.5px; cursor:pointer; font-weight:500; }
+  select:hover{ border-color:var(--teal); }
+  .hop-toggle{ display:flex; align-items:center; gap:6px; }
+  input[type="checkbox"]{ accent-color:var(--teal); cursor:pointer; }
+  .crowd-tag{ padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; }
+  .crowd-Low{ background:var(--teal-light); color:var(--teal-dark); }
+  .crowd-Medium{ background:var(--mustard-light); color:#7a5314; }
+  .crowd-High{ background:var(--rust-light); color:var(--rust); }
+  .curveball-banner{ background:var(--rust-light); border:1px solid var(--rust); color:var(--rust); padding:9px 16px; border-radius:10px; font-size:12px; font-family:var(--sans); font-weight:500; width:100%; animation:fadeUp .25s ease-out; }
+  .prefs-strip{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:14px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:var(--sans); font-size:11.5px; box-shadow:var(--shadow); }
+  .prefs-strip .prefs-label{ text-transform:uppercase; letter-spacing:.6px; color:#8a8267; font-size:10.5px; font-weight:700; }
+
+  /* ---------- MAIN LAYOUT ---------- */
+  .planner{ display:grid; grid-template-columns:270px 1fr; gap:20px; }
+  @media (max-width:820px){ .planner{ grid-template-columns:1fr; } }
+
+  .tray{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:16px; padding:18px; max-height:660px; overflow-y:auto; box-shadow:var(--shadow-lift); position:relative; }
+  .tray::-webkit-scrollbar{ width:8px; }
+  .tray::-webkit-scrollbar-thumb{ background:var(--line); border-radius:8px; }
+  .tray::-webkit-scrollbar-thumb:hover{ background:var(--teal); }
+  .tray h3{ font-size:12.5px; text-transform:uppercase; letter-spacing:1.2px; margin:2px 0 14px; color:var(--teal-dark); font-family:var(--sans); font-weight:700; padding-bottom:10px; border-bottom:2px solid var(--line-soft); }
+  .tray-filter{ display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+  .tray-filter button{ font-size:10.5px; padding:6px 11px; background:#fff; border:1px solid var(--line); font-weight:700; letter-spacing:.3px; transition:all .2s var(--ease); }
+  .tray-filter button:hover{ border-color:var(--teal); transform:translateY(-1px); }
+  .tray-filter button.on{ background:linear-gradient(155deg,var(--teal-glow),var(--teal-dark)); color:#fff; border-color:var(--teal-dark); box-shadow:var(--glow-teal); }
+
+  .card{
+    font-family:var(--sans); background:#fff; border:1px solid var(--line-soft);
+    border-radius:11px; padding:12px 14px; margin-bottom:9px; cursor:grab; font-size:12px;
+    transition:box-shadow .25s var(--ease),transform .25s var(--ease),border-color .2s;
+  }
+  .card:hover{ box-shadow:var(--glow-teal); transform:translateY(-3px) scale(1.01); border-color:var(--teal); }
+  .card:active{ cursor:grabbing; transform:scale(.97); }
+  .card .name{ font-weight:700; font-size:12.5px; }
+  .card .meta{ color:#847d64; font-size:11px; margin-top:3px; display:flex; justify-content:space-between; }
+  .card.ill{ border-left:4px solid var(--mustard); }
+  .card.dining{ border-left:4px solid var(--teal); }
+  .card.selected{ border-color:var(--teal-glow); box-shadow:var(--glow-teal); background:var(--teal-light); transform:translateY(-2px); }
+  .card:focus-visible, .slot-drop:focus-visible, .tab:focus-visible, .subnav button:focus-visible, button:focus-visible{ outline:3px solid var(--gold-glow); outline-offset:2px; }
+  .slot-drop[role="button"]{ cursor:pointer; }
+
+  .timeline{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow-lift); position:relative; overflow:hidden; }
+  .rain-overlay{ position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden; border-radius:16px; }
+  .rain-overlay::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(90,110,140,.06), rgba(90,110,140,.1)); }
+  .raindrop{ position:absolute; top:-6%; width:2px; height:16px; border-radius:2px; background:linear-gradient(to bottom, transparent, rgba(120,150,190,.55)); animation:rainFall linear infinite; }
+  @keyframes rainFall{ to{ top:106%; } }
+  .slot-row{ display:grid; grid-template-columns:78px 1fr; border-top:1px dashed var(--line); transition:background .2s var(--ease-smooth); border-radius:6px; }
+  .slot-row:first-child{ border-top:none; }
+  .slot-row:hover{ background:linear-gradient(90deg, rgba(20,184,166,.06), transparent); }
+  .slot-time{ font-family:var(--sans); font-size:11.5px; color:#8a8267; padding:16px 12px 16px 4px; text-align:right; font-weight:700; position:relative; }
+  .slot-time::after{ content:""; position:absolute; right:0; top:50%; width:6px; height:6px; border-radius:50%; background:var(--line); transform:translate(50%,-50%); }
+  .slot-drop{
+    min-height:58px; padding:9px 4px 9px 14px; display:flex; align-items:center;
+    border-left:2px solid var(--line); transition:border-color .2s var(--ease-smooth);
+  }
+  .slot-drop.dragover{ background:var(--teal-light); border-left-color:var(--teal-glow); border-left-width:3px; box-shadow:inset 3px 0 0 0 var(--teal-glow); }
+  .stub{
+    font-family:var(--sans); width:100%; display:flex; justify-content:space-between; align-items:center;
+    background:linear-gradient(155deg,var(--mustard-light),#F1DB9E); border:1px solid var(--mustard); border-radius:11px; padding:11px 16px; font-size:12.5px;
+    box-shadow:0 3px 10px rgba(122,83,20,.16); animation:pop .25s var(--ease); transition:box-shadow .2s,transform .2s;
+  }
+  .stub:hover{ box-shadow:var(--glow-gold); transform:translateY(-1px); }
+  @keyframes pop{ from{ transform:scale(.88); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .stub.dining{ background:linear-gradient(155deg,var(--teal-light),#CBE7E3); border-color:var(--teal); }
+  .stub.dining:hover{ box-shadow:var(--glow-teal); }
+  .stub .wait{ font-size:11px; color:#7a5314; margin-top:2px; }
+  .stub button{ background:none; border:none; color:var(--rust); font-size:17px; line-height:1; padding:2px 6px; border-radius:50%; transition:background .15s,transform .15s; }
+  .stub button:hover{ background:rgba(188,74,44,.15); transform:scale(1.15) rotate(90deg); }
+
+  /* ---------- OVERLAY (legacy support) ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(15,25,22,.5); backdrop-filter:blur(3px); display:flex; align-items:flex-start; justify-content:center; padding-top:70px; z-index:50; animation:fadeIn .18s; }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+  .drawer{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:16px; padding:28px 32px; width:400px; max-width:90vw; box-shadow:var(--shadow-deep); }
+
+  .bar-row{ margin-bottom:14px; font-family:var(--sans); font-size:12.5px; }
+  .bar-row .label{ display:flex; justify-content:space-between; margin-bottom:5px; font-weight:500; }
+  .bar-track{ background:#fff; border:1px solid var(--line); border-radius:8px; height:11px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--teal-glow)); border-radius:8px; transition:width .5s var(--ease); box-shadow:0 0 8px rgba(20,184,166,.5); }
+  .bar-fill.dining{ background:linear-gradient(90deg,var(--mustard-deep),var(--gold-glow)); box-shadow:0 0 8px rgba(255,207,77,.5); }
+  .bar-fill.ll{ background:linear-gradient(90deg,var(--rust),var(--rust-glow)); box-shadow:0 0 8px rgba(255,112,72,.5); }
+  .bar-total{ border-top:2px solid var(--ink); margin-top:16px; padding-top:12px; font-family:var(--sans); font-weight:700; display:flex; justify-content:space-between; font-size:14.5px; }
+
+  /* ---------- REPORT CARD ---------- */
+  .report{ max-width:620px; margin:40px auto; background:var(--paper-light); border:1px solid var(--line-soft); border-radius:18px; padding:36px 40px; box-shadow:var(--shadow-deep); position:relative; }
+  .report::before{ content:""; position:absolute; top:0; left:0; right:0; height:5px; border-radius:18px 18px 0 0; background:linear-gradient(90deg, var(--teal), var(--pop), var(--mustard), var(--rust)); background-size:200% 100%; animation:gradientSweep 4s linear infinite; }
+  @keyframes gradientSweep{ from{ background-position:0% 0; } to{ background-position:200% 0; } }
+  .grade-box{ text-align:center; margin-bottom:26px; }
+  .grade-box .grade{
+    display:inline-flex; align-items:center; justify-content:center; width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, var(--paper-light) 70%);
+    border:4px solid var(--mustard); box-shadow:var(--glow-gold), inset 0 0 0 2px var(--paper-light);
+    font-size:52px; font-weight:700; color:var(--teal-dark); line-height:1;
+    animation:gradeIn .5s var(--ease), badgeGlow 2.4s ease-in-out infinite 0.5s;
+  }
+  @keyframes gradeIn{ from{ transform:scale(.4) rotate(-8deg); opacity:0; } to{ transform:scale(1) rotate(0); opacity:1; } }
+  @keyframes badgeGlow{ 0%,100%{ box-shadow:var(--glow-gold), inset 0 0 0 2px var(--paper-light); } 50%{ box-shadow:0 0 0 1px rgba(255,207,77,.6), 0 8px 30px rgba(232,163,36,.55), inset 0 0 0 2px var(--paper-light); } }
+  .grade-box .score{ font-family:var(--sans); color:#8a8267; margin-top:10px; font-weight:600; }
+  .cat-row{ margin-bottom:12px; }
+  .cat-row .label{ font-family:var(--sans); font-size:12.5px; display:flex; justify-content:space-between; margin-bottom:4px; font-weight:500; }
+  .feedback-list{ font-family:var(--sans); font-size:13px; margin-top:22px; padding-left:20px; line-height:1.85; color:#443f33; }
+  .family-letter{ margin-top:26px; padding:20px 24px; background:var(--paper); border-left:4px solid var(--mustard); border-radius:0 12px 12px 0; font-style:italic; font-family:var(--serif); }
+  .family-letter p{ margin:0 0 10px; font-size:14.5px; line-height:1.7; }
+  .family-letter p:last-child{ margin-bottom:0; }
+  .home-hero{ text-align:center; margin:50px auto 32px; position:relative; padding-top:40px; }
+  .home-hero .skyline{ position:absolute; left:50%; top:-30px; transform:translateX(-50%); width:680px; max-width:100vw; height:200px; opacity:.22; pointer-events:none; z-index:0; }
+  .home-hero h1, .home-hero .sub{ position:relative; z-index:1; }
+  .home-hero h1{ font-size:42px; letter-spacing:0; margin:0 0 10px; font-weight:600; }
+  .home-hero .sub{ font-family:var(--sans); color:#6b6555; font-size:14px; max-width:440px; margin:0 auto; line-height:1.6; }
+  .pixie-dust{ position:absolute; inset:-10px 0 0 0; height:220px; pointer-events:none; z-index:0; overflow:hidden; }
+  .sparkle{ position:absolute; border-radius:50%; background:radial-gradient(circle, #fff, var(--gold-glow) 55%, transparent 75%); animation:twinkle ease-in-out infinite; box-shadow:0 0 6px 1px rgba(255,207,77,.6); }
+  @keyframes twinkle{ 0%,100%{ opacity:0; transform:scale(.4); } 50%{ opacity:1; transform:scale(1.15); } }
+  .shimmer-text{ background:linear-gradient(100deg, var(--ink) 30%, var(--gold-glow) 45%, var(--mustard) 50%, var(--ink) 65%); background-size:300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmerSweep 5s linear infinite; }
+  @keyframes shimmerSweep{ from{ background-position:100% 0; } to{ background-position:-100% 0; } }
+  .home-actions{ text-align:center; margin:28px 0 42px; }
+  .home-actions .btn{ font-size:15px; padding:14px 32px; }
+  .home-panels{ display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:760px; margin:0 auto; }
+  @media (max-width:700px){ .home-panels{ grid-template-columns:1fr; } }
+  .home-panel{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:14px; padding:22px 24px; font-family:var(--sans); font-size:13px; box-shadow:var(--shadow); transition:box-shadow .2s; }
+  .home-panel:hover{ box-shadow:var(--shadow-lift); }
+  .home-panel h3{ margin:0 0 12px; text-transform:uppercase; letter-spacing:1.2px; font-size:12.5px; color:var(--teal-dark); font-weight:700; }
+  .home-panel p{ line-height:1.65; color:#443f33; margin:0 0 9px; }
+  .home-panel code{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:11.5px; font-family:monospace; }
+  .sound-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+  .sound-row label{ display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500; }
+  input[type="range"]{ width:110px; accent-color:var(--teal); }
+  .log-row{ display:grid; grid-template-columns:32px 1fr auto 40px 56px; align-items:center; gap:8px; padding:9px 4px; border-top:1px dashed var(--line); font-size:12px; transition:background .15s; }
+  .log-row:hover{ background:rgba(21,82,88,.05); }
+  .log-row:first-of-type{ border-top:none; }
+  .log-rank{ color:#8a8267; font-weight:700; }
+  .log-name{ font-weight:700; }
+  .log-meta{ color:#8a8267; font-size:11px; text-align:right; }
+  .log-grade{ font-weight:700; color:var(--teal-dark); text-align:center; }
+  .log-score{ color:#8a8267; text-align:right; }
+  .subnav{ display:flex; gap:6px; margin-bottom:18px; background:var(--paper-light); border:1px solid var(--line-soft); border-radius:14px; padding:6px; box-shadow:var(--shadow); }
+  .subnav button{ flex:1; font-family:var(--sans); font-size:12.5px; padding:10px 10px; background:transparent; border:none; border-radius:9px; font-weight:700; color:#6b6555; transition:background .18s,color .18s; }
+  .subnav button:hover{ background:var(--teal-light); }
+  .subnav button.on{ background:linear-gradient(155deg,var(--teal-glow),var(--teal-dark)); color:var(--paper-light); box-shadow:var(--glow-teal); }
+  .brief-panel{ background:var(--paper-light); border:1px solid var(--line-soft); border-radius:14px; padding:24px 28px; box-shadow:var(--shadow); max-width:640px; }
+  .brief-panel h3{ margin:0 0 12px; text-transform:uppercase; letter-spacing:1px; font-size:14px; color:var(--teal-dark); font-family:var(--serif); font-weight:600; }
+  .day-overview-row{ display:grid; grid-template-columns:60px 1fr 90px; align-items:center; gap:10px; padding:9px 4px; border-top:1px dashed var(--line); font-family:var(--sans); font-size:12.5px; }
+  .day-overview-row:first-of-type{ border-top:none; }
+</style>
+
+
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ============================================================
+   SUNSHINE & CO. VACATION BUREAU — TABLE OF CONTENTS
+   1. DATA           — rides, restaurants, hotels, pricing constants
+   2. ARCHETYPES      — client generation templates, quirks, rare clients
+   3. HELPERS          — wait curve, pricing, misc utility functions
+   4. SOUND ENGINE      — Web Audio SFX + background music
+   5. CAREER/ACHIEVEMENTS — leveling, difficulty, achievements
+   6. STATE             — trip state, client generation, drop/remove logic
+   7. SCORING            — bookedTagSet, buildReportCard, letters
+   8. RENDER              — one render() per screen (home/client/plan/report)
+   9. EVENTS                — wireEvents(), called after every render()
+   Search for the ALL-CAPS section headers below to jump around.
+   ============================================================ */
+/* ============================================================
+   DATA
+   ============================================================ */
+const RIDES = {
+  MK:[
+    {id:"mk_tron",name:"Tron Lightcycle Run",thrill:"intense",type:"thrill",height:48,baseWait:45,ll:"ill",illPrice:[18,28]},
+    {id:"mk_space_mtn",name:"Space Mountain",thrill:"intense",type:"thrill",height:44,baseWait:40,ll:"multipass",tier:"A"},
+    {id:"mk_7dwarfs",name:"Seven Dwarfs Mine Train",thrill:"moderate",type:"thrill",height:38,baseWait:55,ll:"multipass",tier:"A"},
+    {id:"mk_big_thunder",name:"Big Thunder Mountain",thrill:"moderate",type:"thrill",height:40,baseWait:30,ll:"multipass",tier:"B"},
+    {id:"mk_pirates",name:"Pirates of the Caribbean",thrill:"mild",type:"dark-ride",height:null,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"mk_haunted_mansion",name:"Haunted Mansion",thrill:"mild",type:"dark-ride",height:null,baseWait:25,ll:"multipass",tier:"B"},
+    {id:"mk_jungle_cruise",name:"Jungle Cruise",thrill:"mild",type:"dark-ride",height:null,baseWait:30,ll:"multipass",tier:"B"},
+    {id:"mk_peter_pan",name:"Peter Pan's Flight",thrill:"mild",type:"dark-ride",height:null,baseWait:40,ll:"multipass",tier:"B"},
+    {id:"mk_small_world",name:"It's a Small World",thrill:"mild",type:"dark-ride",height:null,baseWait:15,ll:"none"},
+    {id:"mk_dumbo",name:"Dumbo the Flying Elephant",thrill:"mild",type:"thrill",height:null,baseWait:20,ll:"none"},
+    {id:"mk_tiana",name:"Tiana's Bayou Adventure",thrill:"moderate",type:"water",height:40,baseWait:45,ll:"multipass",tier:"B"},
+    {id:"mk_little_mermaid",name:"Under the Sea: Journey of the Little Mermaid",thrill:"mild",type:"dark-ride",height:null,baseWait:25,ll:"multipass",tier:"B"},
+    {id:"mk_buzz",name:"Buzz Lightyear's Space Ranger Spin",thrill:"mild",type:"dark-ride",height:null,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"mk_barnstormer",name:"The Barnstormer",thrill:"mild",type:"thrill",height:35,baseWait:15,ll:"none"},
+    {id:"mk_tea_party",name:"Mad Tea Party",thrill:"mild",type:"thrill",height:null,baseWait:15,ll:"none"},
+    {id:"mk_pooh",name:"The Many Adventures of Winnie the Pooh",thrill:"mild",type:"dark-ride",height:null,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"mk_country_bear",name:"Country Bear Jamboree",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"mk_philharmagic",name:"Mickey's PhilharMagic",thrill:"mild",type:"show",height:null,baseWait:15,ll:"none"},
+    {id:"mk_happily_ever_after",name:"Happily Ever After (Fireworks)",thrill:"mild",type:"fireworks",height:null,baseWait:5,ll:"none"},
+    {id:"mk_town_square_theater",name:"Town Square Theater (Meet Mickey & Minnie)",thrill:"mild",type:"meetgreet",height:null,baseWait:30,ll:"multipass",tier:"B"},
+    {id:"mk_princess_hall",name:"Princess Fairytale Hall",thrill:"mild",type:"meetgreet",height:null,baseWait:35,ll:"multipass",tier:"B"},
+  ],
+  EPCOT:[
+    {id:"ep_guardians",name:"Guardians of the Galaxy: Cosmic Rewind",thrill:"intense",type:"thrill",height:42,baseWait:60,ll:"ill",illPrice:[20,30]},
+    {id:"ep_test_track",name:"Test Track",thrill:"intense",type:"thrill",height:40,baseWait:40,ll:"multipass",tier:"A"},
+    {id:"ep_frozen",name:"Frozen Ever After",thrill:"mild",type:"dark-ride",height:null,baseWait:45,ll:"multipass",tier:"A"},
+    {id:"ep_remy",name:"Remy's Ratatouille Adventure",thrill:"mild",type:"dark-ride",height:null,baseWait:40,ll:"multipass",tier:"B"},
+    {id:"ep_soarin",name:"Soarin' Around the World",thrill:"moderate",type:"thrill",height:40,baseWait:35,ll:"multipass",tier:"B"},
+    {id:"ep_mission_space",name:"Mission: Space",thrill:"intense",type:"thrill",height:44,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"ep_spaceship_earth",name:"Spaceship Earth",thrill:"mild",type:"dark-ride",height:null,baseWait:15,ll:"multipass",tier:"B"},
+    {id:"ep_living_land",name:"Living with the Land",thrill:"mild",type:"dark-ride",height:null,baseWait:10,ll:"none"},
+    {id:"ep_nemo",name:"The Seas with Nemo & Friends",thrill:"mild",type:"dark-ride",height:null,baseWait:10,ll:"none"},
+    {id:"ep_imagination",name:"Journey Into Imagination",thrill:"mild",type:"dark-ride",height:null,baseWait:10,ll:"none"},
+    {id:"ep_gran_fiesta",name:"Gran Fiesta Tour",thrill:"mild",type:"dark-ride",height:null,baseWait:10,ll:"none"},
+    {id:"ep_turtle_talk",name:"Turtle Talk with Crush",thrill:"mild",type:"show",height:null,baseWait:15,ll:"none"},
+    {id:"ep_awesome_planet",name:"Awesome Planet",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"ep_impressions_france",name:"Impressions de France",thrill:"mild",type:"show",height:null,baseWait:5,ll:"none"},
+    {id:"ep_luminous",name:"Luminous: The Symphony of Us (Fireworks)",thrill:"mild",type:"fireworks",height:null,baseWait:5,ll:"none"},
+    {id:"ep_character_spot",name:"Character Spot (Meet Mickey & Friends)",thrill:"mild",type:"meetgreet",height:null,baseWait:20,ll:"none"},
+  ],
+  HS:[
+    {id:"hs_rise",name:"Rise of the Resistance",thrill:"moderate",type:"thrill",height:40,baseWait:70,ll:"ill",illPrice:[20,32]},
+    {id:"hs_rnr",name:"Rock 'n' Roller Coaster",thrill:"intense",type:"thrill",height:48,baseWait:35,ll:"multipass",tier:"A"},
+    {id:"hs_slinky",name:"Slinky Dog Dash",thrill:"moderate",type:"thrill",height:38,baseWait:50,ll:"multipass",tier:"A"},
+    {id:"hs_tower_terror",name:"Tower of Terror",thrill:"intense",type:"thrill",height:40,baseWait:35,ll:"multipass",tier:"B"},
+    {id:"hs_falcon",name:"Millennium Falcon",thrill:"moderate",type:"thrill",height:38,baseWait:25,ll:"multipass",tier:"B"},
+    {id:"hs_runaway_railway",name:"Runaway Railway",thrill:"mild",type:"dark-ride",height:null,baseWait:30,ll:"multipass",tier:"B"},
+    {id:"hs_toy_story_mania",name:"Toy Story Mania!",thrill:"mild",type:"dark-ride",height:null,baseWait:35,ll:"multipass",tier:"B"},
+    {id:"hs_alien_saucers",name:"Alien Swirling Saucers",thrill:"mild",type:"thrill",height:null,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"hs_muppets",name:"Muppet*Vision 3D",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"hs_star_tours",name:"Star Tours – The Adventures Continue",thrill:"moderate",type:"thrill",height:40,baseWait:25,ll:"multipass",tier:"B"},
+    {id:"hs_beauty_beast",name:"Beauty and the Beast Live on Stage",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"hs_indiana_jones",name:"Indiana Jones Epic Stunt Spectacular",thrill:"mild",type:"show",height:null,baseWait:15,ll:"none"},
+    {id:"hs_fantasmic",name:"Fantasmic!",thrill:"mild",type:"fireworks",height:null,baseWait:10,ll:"none"},
+    {id:"hs_launch_bay",name:"Star Wars Launch Bay (Meet Chewbacca)",thrill:"mild",type:"meetgreet",height:null,baseWait:25,ll:"none"},
+  ],
+  AK:[
+    {id:"ak_flight_of_passage",name:"Avatar Flight of Passage",thrill:"moderate",type:"thrill",height:44,baseWait:65,ll:"ill",illPrice:[18,26]},
+    {id:"ak_everest",name:"Expedition Everest",thrill:"intense",type:"thrill",height:44,baseWait:30,ll:"multipass",tier:"A"},
+    {id:"ak_safaris",name:"Kilimanjaro Safaris",thrill:"mild",type:"dark-ride",height:null,baseWait:30,ll:"multipass",tier:"B"},
+    {id:"ak_navi_river",name:"Na'vi River Journey",thrill:"mild",type:"dark-ride",height:null,baseWait:40,ll:"multipass",tier:"A"},
+    {id:"ak_dinosaur",name:"DINOSAUR",thrill:"moderate",type:"thrill",height:40,baseWait:20,ll:"multipass",tier:"B"},
+    {id:"ak_kali_river",name:"Kali River Rapids",thrill:"moderate",type:"water",height:38,baseWait:25,ll:"multipass",tier:"B"},
+    {id:"ak_bug",name:"It's Tough to Be a Bug",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"ak_train",name:"Wildlife Express Train",thrill:"mild",type:"show",height:null,baseWait:10,ll:"none"},
+    {id:"ak_feathered",name:"Feathered Friends in Flight",thrill:"mild",type:"show",height:null,baseWait:15,ll:"none"},
+    {id:"ak_character_landing",name:"Character Landing (Meet Russell & Dug)",thrill:"mild",type:"meetgreet",height:null,baseWait:15,ll:"none"},
+  ],
+};
+
+const RESTAURANTS = {
+  MK:[
+    {id:"mk_columbia_harbour",name:"Columbia Harbour House",type:"QS",price:[13,17]},
+    {id:"mk_pecos_bill",name:"Pecos Bill Tall Tale Inn",type:"QS",price:[13,17]},
+    {id:"mk_pinocchio",name:"Pinocchio Village Haus",type:"QS",price:[13,17]},
+    {id:"mk_tonys",name:"Tony's Town Square",type:"TS",price:[35,55]},
+    {id:"mk_skipper_canteen",name:"Jungle Navigation Co. Skipper Canteen",type:"TS",price:[38,55]},
+    {id:"mk_cinderella",name:"Cinderella's Royal Table",type:"character",price:[74,88]},
+  ],
+  EPCOT:[
+    {id:"ep_sunshine_seasons",name:"Sunshine Seasons",type:"QS",price:[14,18]},
+    {id:"ep_regal_eagle",name:"Regal Eagle Smokehouse",type:"QS",price:[14,18]},
+    {id:"ep_les_halles",name:"Les Halles Boulangerie",type:"QS",price:[10,15]},
+    {id:"ep_le_cellier",name:"Le Cellier Steakhouse",type:"TS",price:[50,65]},
+    {id:"ep_via_napoli",name:"Via Napoli Ristorante e Pizzeria",type:"TS",price:[30,45]},
+    {id:"ep_connections_cafe",name:"Connections Café",type:"QS",price:[12,17]},
+    {id:"ep_space_220",name:"Space 220 Restaurant",type:"TS",price:[55,75]},
+    {id:"ep_coral_reef",name:"Coral Reef Restaurant",type:"TS",price:[42,58]},
+    {id:"ep_akershus",name:"Akershus Royal Banquet Hall",type:"character",price:[59,69]},
+  ],
+  HS:[
+    {id:"hs_woodys",name:"Woody's Lunch Box",type:"QS",price:[12,16]},
+    {id:"hs_abc_commissary",name:"ABC Commissary",type:"QS",price:[13,17]},
+    {id:"hs_docking_bay",name:"Docking Bay 7",type:"QS",price:[14,18]},
+    {id:"hs_scifi",name:"Sci-Fi Dine-In Theater",type:"TS",price:[35,50]},
+    {id:"hs_mama_melrose",name:"Mama Melrose's Ristorante Italiano",type:"TS",price:[35,48]},
+    {id:"hs_hollywood_vine",name:"Hollywood & Vine",type:"character",price:[55,65]},
+  ],
+  AK:[
+    {id:"ak_satuli",name:"Satu'li Canteen",type:"QS",price:[14,18]},
+    {id:"ak_flame_tree",name:"Flame Tree Barbecue",type:"QS",price:[14,18]},
+    {id:"ak_pizzafari",name:"Pizzafari",type:"QS",price:[13,17]},
+    {id:"ak_yak_yeti",name:"Yak & Yeti",type:"TS",price:[35,50]},
+    {id:"ak_tiffins",name:"Tiffins Restaurant",type:"TS",price:[45,65]},
+    {id:"ak_tusker_house",name:"Tusker House",type:"character",price:[55,65]},
+  ],
+  DS:[
+    {id:"ds_boathouse",name:"The Boathouse",type:"TS",price:[40,60]},
+    {id:"ds_rainforest",name:"Rainforest Cafe",type:"TS",price:[30,45]},
+    {id:"ds_homecomin",name:"Homecomin' Kitchen",type:"TS",price:[32,48]},
+  ],
+};
+
+// Snack cart options — offered whenever a Snack is booked, regardless of park
+const SNACKS = [
+  {id:"snack_churro",name:"Churro",price:[6,8]},
+  {id:"snack_popcorn",name:"Popcorn",price:[6,9]},
+  {id:"snack_popcorn_bucket",name:"Specialty Popcorn Bucket",price:[20,32]},
+  {id:"snack_pretzel",name:"Mickey Pretzel",price:[7,9]},
+  {id:"snack_mickey_bar",name:"Mickey Premium Ice Cream Bar",price:[6,8]},
+  {id:"snack_lemonade_slush",name:"Lemonade Slush",price:[6,8]},
+  {id:"snack_strawberry_bar",name:"Strawberry Ice Cream Bar",price:[6,8]},
+];
+
+// Park shops — general souvenirs everywhere, plus apparel exclusive to that specific park
+// (exclusive:true items are what park-exclusive-loving clients specifically want)
+const SHOPS = {
+  MK:{ name:"The Emporium", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
+    {id:"shop_mk_tee",name:"Magic Kingdom Graphic Tee",price:[30,38],exclusive:true},
+    {id:"shop_mk_loungefly",name:"Magic Kingdom Loungefly Bag",price:[75,90],exclusive:true},
+    {id:"shop_mk_jersey",name:"Magic Kingdom Spirit Jersey",price:[70,85],exclusive:true},
+  ]},
+  EPCOT:{ name:"Mouse Gear", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
+    {id:"shop_ep_tee",name:"EPCOT Graphic Tee",price:[30,38],exclusive:true},
+    {id:"shop_ep_loungefly",name:"EPCOT Loungefly Bag",price:[75,90],exclusive:true},
+    {id:"shop_ep_jersey",name:"EPCOT Spirit Jersey",price:[70,85],exclusive:true},
+  ]},
+  HS:{ name:"Celebrity 5 & 10", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
+    {id:"shop_hs_tee",name:"Hollywood Studios Graphic Tee",price:[30,38],exclusive:true},
+    {id:"shop_hs_loungefly",name:"Hollywood Studios Loungefly Bag",price:[75,90],exclusive:true},
+    {id:"shop_hs_jersey",name:"Hollywood Studios Spirit Jersey",price:[70,85],exclusive:true},
+  ]},
+  AK:{ name:"Island Mercantile", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
+    {id:"shop_ak_tee",name:"Animal Kingdom Graphic Tee",price:[30,38],exclusive:true},
+    {id:"shop_ak_loungefly",name:"Animal Kingdom Loungefly Bag",price:[75,90],exclusive:true},
+    {id:"shop_ak_jersey",name:"Animal Kingdom Spirit Jersey",price:[70,85],exclusive:true},
+  ]},
+  DS:{ name:"World of Disney", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
+    {id:"shop_ds_jersey",name:"Disney Springs Spirit Jersey",price:[70,85],exclusive:true},
+  ]},
+};
+
+// Resort activities available on rest days — each offers a few duration options so you
+// pick how long to book instead of stacking multiple identical bookings back to back.
+const RESORT_ACTIVITIES = {
+  resort_pool:{ name:"Resort pool time", availableAt:"all", options:[
+    {hours:1, price:[0,0]}, {hours:2, price:[0,0]}, {hours:3, price:[0,0]}, {hours:4, price:[0,0]},
+  ]},
+  resort_fishing:{ name:"Fishing excursion", availableAt:"all", options:[
+    {hours:2, price:[220,260]}, {hours:4, price:[420,480]},
+  ]},
+  resort_spa:{ name:"Spa treatment (Senses Spa)", availableAt:["grand_floridian"], options:[
+    {hours:1, price:[140,170]}, {hours:2, price:[260,310]},
+  ]},
+};
+
+// Signature table-service dining available at your own resort — offered on rest days
+// (or any day, really) as an alternative to the generic hotel quick service.
+const HOTEL_DINING = {
+  polynesian:[{id:"hd_ohana",name:"'Ohana",price:[45,60]}],
+  grand_floridian:[{id:"hd_narcoossees",name:"Narcoossee's",price:[55,75]}],
+  animal_kingdom_lodge:[{id:"hd_sanaa",name:"Sanaa",price:[35,50]}],
+  port_orleans_riverside:[{id:"hd_boatwrights",name:"Boatwright's Dining Hall",price:[30,42]}],
+  wilderness_lodge:[{id:"hd_whispering_canyon",name:"Whispering Canyon Cafe",price:[30,42]}],
+  beach_club:[{id:"hd_cape_may",name:"Cape May Cafe",price:[40,55]}],
+  riviera:[{id:"hd_topolino",name:"Topolino's Terrace",price:[45,65]}],
+};
+
+// Exclusive treats unlocked only when a ticketed after-hours event is added to the trip
+const EVENT_TREATS = [
+  {id:"event_treat_1",name:"Glow-in-the-dark trick-or-treat candy",price:[0,0]},
+  {id:"event_treat_2",name:"Holiday-exclusive hot cocoa",price:[0,0]},
+];
+
+// Epcot festival booth menus — only appear at Epcot, and only if the trip's season matches
+const FESTIVALS = {
+  spring:{ name:"International Flower & Garden Festival", booths:[
+    {id:"fest_watermelon_cake",name:"Watermelon Cake",price:[6,8]},
+    {id:"fest_strawberry_shortcake",name:"Strawberry Shortcake",price:[7,9]},
+    {id:"fest_veggie_crepe",name:"Garden Vegetable Crepe",price:[8,11]},
+    {id:"fest_hibiscus_lemonade",name:"Hibiscus Lemonade",price:[6,8]},
+  ]},
+  fall:{ name:"International Food & Wine Festival", booths:[
+    {id:"fest_coq_au_vin",name:"Coq au Vin Bites",price:[9,12]},
+    {id:"fest_sake_flight",name:"Warm Sake Flight",price:[13,17]},
+    {id:"fest_kalua_slider",name:"Kalua Pork Slider",price:[8,11]},
+    {id:"fest_charcuterie",name:"Cheese & Charcuterie Board",price:[14,18]},
+  ]},
+  holidays:{ name:"Festival of the Holidays", booths:[
+    {id:"fest_peppermint_cupcake",name:"Peppermint Bark Cupcake",price:[7,9]},
+    {id:"fest_turkey_bowl",name:"Holiday Roast Turkey Bowl",price:[12,15]},
+    {id:"fest_gingerbread",name:"Gingerbread Cookie",price:[5,7]},
+    {id:"fest_mulled_wine",name:"Hot Mulled Wine",price:[10,13]},
+  ]},
+  // summer has no dedicated Epcot festival — regular dining only
+};
+
+// Room types — availability is granted per hotel via roomTypes[]. Capacity gates what a
+// party can actually book; priceMult scales off the hotel's base (Standard) price range.
+const ROOM_TYPES = {
+  standard:{ label:"Standard Room", capacity:4, priceMult:1.0 },
+  familySuite:{ label:"Family Suite", capacity:6, priceMult:1.6 },
+  cabin:{ label:"Cabin", capacity:6, priceMult:1.0 },
+  oneBedroom:{ label:"1-Bedroom Villa", capacity:5, priceMult:2.2 },
+  twoBedroom:{ label:"2-Bedroom Villa", capacity:9, priceMult:3.2 },
+  threeBedroom:{ label:"3-Bedroom Villa", capacity:12, priceMult:4.2 },
+  grandVilla:{ label:"Grand Villa", capacity:15, priceMult:5.5 },
+};
+const VALUE_ROOMS = ["standard"];
+const DELUXE_ROOMS = ["standard","oneBedroom","twoBedroom","threeBedroom","grandVilla"];
+
+const HOTELS = [
+  {id:"all_star",name:"All-Star Resorts",tier:"value",price:[120,300],roomTypes:VALUE_ROOMS},
+  {id:"pop_century",name:"Pop Century",tier:"value",price:[150,350],roomTypes:VALUE_ROOMS},
+  {id:"art_of_animation",name:"Art of Animation",tier:"value",price:[160,360],roomTypes:["standard","familySuite"]},
+  {id:"caribbean_beach",name:"Caribbean Beach Resort",tier:"moderate",price:[250,450],roomTypes:["standard","familySuite"]},
+  {id:"port_orleans_fq",name:"Port Orleans - French Quarter",tier:"moderate",price:[230,420],roomTypes:["standard"]},
+  {id:"port_orleans_riverside",name:"Port Orleans - Riverside",tier:"moderate",price:[250,450],roomTypes:["standard","familySuite"]},
+  {id:"coronado_springs",name:"Coronado Springs",tier:"moderate",price:[280,480],roomTypes:["standard"]},
+  {id:"fort_wilderness",name:"Fort Wilderness Cabins",tier:"moderate",price:[400,550],roomTypes:["cabin"]},
+  {id:"boardwalk",name:"BoardWalk Inn",tier:"deluxe",price:[500,800],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+  {id:"polynesian",name:"Polynesian Village",tier:"deluxe",price:[550,900],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+  {id:"grand_floridian",name:"Grand Floridian",tier:"deluxe",price:[650,1000],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+  {id:"animal_kingdom_lodge",name:"Animal Kingdom Lodge",tier:"deluxe",price:[480,780],roomTypes:DELUXE_ROOMS},
+  {id:"wilderness_lodge",name:"Wilderness Lodge",tier:"deluxe",price:[460,760],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+  {id:"beach_club",name:"Beach Club Resort",tier:"deluxe",price:[560,880],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+  {id:"riviera",name:"Riviera Resort",tier:"deluxe",price:[520,850],earlyEntry:true,roomTypes:DELUXE_ROOMS},
+];
+function smallestFittingRoomType(hotel, size){
+  const fits = hotel.roomTypes.filter(rt=>ROOM_TYPES[rt].capacity>=size);
+  if(!fits.length) return null;
+  return fits.sort((a,b)=>ROOM_TYPES[a].capacity-ROOM_TYPES[b].capacity)[0];
+}
+
+const MULTIPASS_PRICE = { MK:[29,45], HS:[24,32], EPCOT:[19,25], AK:[16,20] };
+const TICKET_PRICE = { MK:[130,210], HS:[125,195], EPCOT:[125,195], AK:[119,180] };
+const PARK_HOPPER_FEE = [80,100];
+const PARK_NAMES = { MK:"Magic Kingdom", EPCOT:"EPCOT", HS:"Hollywood Studios", AK:"Animal Kingdom", DS:"Disney Springs" };
+const DS_MERCH_FEE = 100; // flat per person for a Disney Springs day (shopping/merch)
+const MAX_LL_PER_DAY = 3; // cap on how many rides can use Lightning Lane in a single day
+const MAX_A_TIER_PER_DAY = 1; // only 1 A-tier Multi Pass ride per day; rest must be B-tier
+
+const PHOTOPASS_PRICE = 199; // one-time, per trip, flat
+const EVENTS = {
+  none:{ label:"None", fee:0 },
+  halloween:{ label:"Mickey's Not-So-Scary Halloween Party", fee:135 },
+  christmas:{ label:"Mickey's Very Merry Christmas Party", fee:145 },
+};
+const SEASONS = {
+  summer:{ label:"Summer", note:"Hot and humid — expect afternoon storms and steady crowds.", crowdWeights:{Low:1,Medium:2,High:2} },
+  fall:{ label:"Fall / Halloween season", note:"Comfortable weather, generally lighter crowds outside event nights.", crowdWeights:{Low:2,Medium:2,High:1} },
+  holidays:{ label:"Winter Holidays", note:"Beautifully decorated, but the busiest and priciest time of year.", crowdWeights:{Low:0,Medium:2,High:3} },
+  spring:{ label:"Spring", note:"Mild weather, but Spring Break brings its own crowd spikes.", crowdWeights:{Low:1,Medium:3,High:1} },
+};
+function pickWeightedCrowd(seasonKey){
+  const weights = (SEASONS[seasonKey]||SEASONS.summer).crowdWeights;
+  const pool = [];
+  Object.entries(weights).forEach(([k,w])=>{ for(let i=0;i<w;i++) pool.push(k); });
+  return pick(pool.length?pool:["Low","Medium","High"]);
+}
+
+const ARCHETYPES = {
+  thrill_seeker:{ label:"Thrill-seeker crew", sizeRange:[2,3], tripRange:[3,4],
+    mustHaves:["ride_intense","ride_moderate","ill_priority"], dealbreakers:["no_kiddie_rides"],
+    llAttitude:"wants_top_2_only", flavor:"Wants every coaster, doesn't care about character stuff." },
+  toddler_family:{ label:"Family with young kids", sizeRange:[3,5], tripRange:[4,6],
+    mustHaves:["ride_mild","character_meal","midday_break"], dealbreakers:["no_height_44"],
+    llAttitude:"no_spend", flavor:"Naps matter. Height limits rule out half the roster." },
+  multi_gen:{ label:"Multi-generation trip", sizeRange:[5,6], tripRange:[5,7],
+    mustHaves:["low_mobility","ride_mild","character_meal","rest_breaks"], dealbreakers:["no_long_queues"],
+    llAttitude:"budget_conscious", flavor:"Grandparents, parents, and kids — competing needs to balance." },
+  foodie:{ label:"Foodie family", sizeRange:[2,5], tripRange:[4,6],
+    mustHaves:["named_restaurant","character_meal","signature_ts"], dealbreakers:["no_qs_only_days"],
+    llAttitude:"wants_top_2_only", flavor:"Dining matters more than ride count." },
+  budget_grinder:{ label:"Budget-minded group", sizeRange:[2,6], tripRange:[3,5],
+    mustHaves:["max_rides","qs_only"], dealbreakers:["no_ill_spend","no_character_dining"],
+    llAttitude:"no_spend", flavor:"Wants to maximize rides per dollar. No Lightning Lane spend." },
+  fandom:{ label:"Fandom-focused family", sizeRange:[2,6], tripRange:[3,5],
+    mustHaves:["fandom_ride","ride_moderate"], dealbreakers:[],
+    llAttitude:"wants_top_2_only", flavor:"One specific ride is non-negotiable — everything else is flexible." },
+};
+
+// Rare special clients — low spawn chance, unique flavor, break up the normal rotation
+const RARE_ARCHETYPES = {
+  honeymoon:{ label:"Honeymoon couple", sizeRange:[2,2], tripRange:[4,5],
+    mustHaves:["signature_ts","ride_moderate"], dealbreakers:["no_qs_only_days"],
+    llAttitude:"wants_top_2_only", flavor:"Just married — wants the trip to feel special, not rushed.", rare:true },
+  reunion:{ label:"Extended family reunion", sizeRange:[7,15], tripRange:[5,7],
+    mustHaves:["ride_moderate","character_meal","rest_breaks"], dealbreakers:["no_long_queues"],
+    llAttitude:"budget_conscious", flavor:"A big, loud multi-generational group that hasn't all been together in years — this many people will need serious room.", rare:true },
+  proposal:{ label:"Secret proposal trip", sizeRange:[2,2], tripRange:[3,4],
+    mustHaves:["signature_ts","fandom_ride"], dealbreakers:[],
+    llAttitude:"wants_top_2_only", flavor:"He's proposing on this trip and needs everything to go right.", rare:true },
+};
+
+const QUIRKS = [
+  { text:"Dad is genuinely terrified of Tower of Terror — steer clear if you can.", avoidRideId:"hs_tower_terror" },
+  { text:"One of the kids has a birthday mid-trip — a little something special would go a long way.", bonusTag:"character_meal" },
+  { text:"Grandma uses a wheelchair — pick attractions that are easy to queue for.", bonusTag:"low_mobility" },
+  { text:"They're obsessed with churros and want to try one in every park.", flavorOnly:true },
+  { text:"This is their very first Disney trip ever — they're a little overwhelmed.", flavorOnly:true },
+  { text:"One family member has a severe peanut allergy — dining choices matter.", flavorOnly:true },
+  { text:"They've read every blog post about wait times and will notice if you get it wrong.", flavorOnly:true },
+  { text:"They're big Star Wars fans, even outside the archetype's usual picks.", bonusTag:"fandom_ride" },
+  { text:"They've been eyeing a park-exclusive Spirit Jersey and would love to bring one home.", bonusTag:"park_exclusive_item" },
+  { text:"The little one has been talking about meeting their favorite character for months — don't let them down.", bonusTag:"meet_greet" },
+];
+
+const TAG_LABELS = {
+  ride_intense:"Wants intense thrill rides", ill_priority:"Wants top Lightning Lane rides",
+  ride_mild:"Wants mild/kiddie rides", character_meal:"Wants a character meal",
+  midday_break:"Needs a midday break", low_mobility:"Needs low-mobility-friendly rides",
+  rest_breaks:"Needs built-in rest breaks", named_restaurant:"Wants a sit-down restaurant",
+  signature_ts:"Wants a signature table-service meal", max_rides:"Wants max ride count",
+  qs_only:"Prefers quick service dining", fandom_ride:"Has one must-ride fandom attraction",
+  ride_moderate:"Open to moderate thrill rides",
+  no_kiddie_rides:"No kiddie/slow rides", no_height_44:"Nothing over 44in height req",
+  no_long_queues:"No long standing queues", no_qs_only_days:"Not every meal can be quick service",
+  no_ill_spend:"No Individual Lightning Lane spend", no_character_dining:"No character dining",
+  park_exclusive_item:"Wants a park-exclusive souvenir (Spirit Jersey, Loungefly, etc.)",
+  meet_greet:"Wants a character meet-and-greet",
+};
+
+/* ============================================================
+   WAIT CURVE + HELPERS
+   ============================================================ */
+const HOURS = ["9 AM","10 AM","11 AM","12 PM","1 PM","2 PM","3 PM","4 PM","5 PM","6 PM","7 PM","8 PM"];
+const EXTENDED_HOURS = ["9 PM","10 PM"]; // added when "Surprise extended evening hours" curveball hits a day
+const FIREWORKS_TIME = "8 PM"; // the last slot of the day — closest stand-in for actual show time
+
+// A day's usable hour slots — extended by 2 hours (to 11 PM close) if that day rolled
+// the "Surprise extended evening hours" curveball.
+function dayHasExtendedHours(day){
+  return state && state.curveballDay===day.dayNumber && state.curveballLabel==="Surprise extended evening hours";
+}
+function hoursForDay(day){
+  return dayHasExtendedHours(day) ? [...HOURS, ...EXTENDED_HOURS] : HOURS;
+}
+// Wait-curve index clamps at the last defined hour (curve arrays only cover the 12 core slots) —
+// extended hours reuse the late-night (lowest) wait multiplier, which is realistic anyway.
+function curveIndexFor(hours, slotHour){
+  const idx = hours.indexOf(slotHour);
+  return idx<0 ? 11 : Math.min(idx, 11);
+}
+const CURVES = {
+  headliner:[0.3,0.7,1.0,1.15,1.0,0.9,1.05,1.15,1.05,0.9,0.7,0.45],
+  popular:  [0.35,0.65,0.85,0.95,0.85,0.8,0.9,0.95,0.85,0.75,0.6,0.4],
+  steady:   [0.5,0.7,0.8,0.8,0.75,0.75,0.8,0.8,0.75,0.7,0.6,0.5],
+};
+const CROWD_MULT = { Low:0.75, Medium:1.0, High:1.3 };
+
+function curveShape(ride){
+  if(ride.ll==="ill" || ride.baseWait>=45) return CURVES.headliner;
+  if(ride.baseWait>=25) return CURVES.popular;
+  return CURVES.steady;
+}
+function currentWait(ride, hourIdx, crowdSeed, earlyEntry){
+  const shape = curveShape(ride);
+  let w = ride.baseWait * shape[hourIdx] * CROWD_MULT[crowdSeed];
+  if(earlyEntry && hourIdx<2) w *= 0.7; // rope-drop head start from an Early Entry hotel
+  return Math.max(5, Math.round(w/5)*5);
+}
+function priceInRange(range, crowdSeed){
+  const t = crowdSeed==="Low" ? 0 : crowdSeed==="High" ? 1 : 0.5;
+  return Math.round(range[0] + (range[1]-range[0])*t);
+}
+function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function fmtMoney(n){ return "$" + Math.round(n).toLocaleString(); }
+
+/* ============================================================
+   SOUND ENGINE
+   No audio files are bundled with this single-file app, so SFX and
+   the background loop are synthesized in-browser with the Web Audio
+   API — nothing to download, nothing that can go missing. Tones are
+   layered (two slightly detuned oscillators through a lowpass filter)
+   for a warmer, less "beepy" sound, and the background music uses a
+   proper lookahead scheduler (not setInterval) so the beat stays tight.
+
+   WANT TO USE YOUR OWN MUSIC/SFX FILES INSTEAD?
+   1. Put an mp3 (e.g. "theme.mp3") in the same folder as this HTML file.
+   2. Set MUSIC_FILE_PATH below to that filename, e.g. "theme.mp3".
+   3. Reload — the game will play your file on loop instead of the
+      synthesized loop automatically. Leave it as "" to keep the
+      built-in synth music.
+   For custom sound effects, do the same with the SFX_FILES paths
+   below (drop, remove, purchase, gradeGood, gradeBad) — any left
+   blank falls back to the synthesized tone.
+   ============================================================ */
+const MUSIC_FILE_PATH = ""; // e.g. "theme.mp3" — leave blank to use synth music
+const SFX_FILES = { drop:"", remove:"", purchase:"", gradeGood:"", gradeBad:"" };
+
+const sound = { sfxOn:true, musicOn:false, volume:0.32, ctx:null, musicEl:null };
+const scheduler = { timerId:null, nextNoteTime:0, beat:0, tempo:98, lookahead:25, scheduleAhead:0.12 };
+
+function ensureAudioCtx(){
+  if(!sound.ctx){
+    try{ sound.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ sound.ctx=null; }
+  }
+  if(sound.ctx && sound.ctx.state==="suspended") sound.ctx.resume();
+  return sound.ctx;
+}
+
+// Layered, filtered tone with a real attack/release envelope — warmer than a bare oscillator.
+function playNote(freq, opts={}){
+  const ctx = ensureAudioCtx();
+  if(!ctx) return;
+  const { duration=0.3, type="sine", volMul=1, attack=0.012, release=0.18, when=0, filterFreq=3200, detune=5 } = opts;
+  const t0 = ctx.currentTime + when;
+  const osc1 = ctx.createOscillator(), osc2 = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc1.type = type; osc2.type = type;
+  osc1.frequency.value = freq; osc2.frequency.value = freq;
+  osc2.detune.value = detune;
+  filter.type = "lowpass"; filter.frequency.value = filterFreq; filter.Q.value = 0.6;
+  const peak = Math.max(sound.volume*volMul, 0.0001);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(peak, t0+attack);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0+duration+release);
+  osc1.connect(filter); osc2.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  osc1.start(t0); osc2.start(t0);
+  const stopAt = t0+duration+release+0.05;
+  osc1.stop(stopAt); osc2.stop(stopAt);
+}
+function playTone(freq, duration, type="sine", volMul=1){ playNote(freq, {duration, type, volMul}); } // back-compat alias
+
+function playFileOrTone(fileKey, toneFn){
+  if(!sound.sfxOn) return;
+  const filePath = SFX_FILES[fileKey];
+  if(filePath){
+    const a = new Audio(filePath); a.volume = sound.volume; a.play().catch(()=>{});
+  } else { toneFn(); }
+}
+
+// --- Sound effects ---
+function sfxDrop(){
+  playFileOrTone("drop", ()=>{ playNote(720,{duration:.07,type:"triangle",volMul:.8,filterFreq:5000}); playNote(980,{duration:.09,type:"triangle",volMul:.55,when:.045,filterFreq:5500}); });
+}
+function sfxRemove(){
+  playFileOrTone("remove", ()=> playNote(260,{duration:.11,type:"sine",volMul:.55,filterFreq:1200,release:.12}));
+}
+function sfxPurchase(){
+  playFileOrTone("purchase", ()=>{
+    [523.25,659.25,783.99].forEach((f,i)=> playNote(f,{duration:.14,type:"triangle",volMul:.55,when:i*.08,filterFreq:6000,attack:.005}));
+  });
+}
+function sfxGrade(pass){
+  playFileOrTone(pass?"gradeGood":"gradeBad", ()=>{
+    if(pass){
+      [523.25,659.25,783.99,1046.5].forEach((f,i)=> playNote(f,{duration:.26,type:"triangle",volMul:.6,when:i*.11,filterFreq:5000}));
+      [261.63,329.63,392.00].forEach((f,i)=> playNote(f,{duration:.9,type:"sine",volMul:.22,when:i*.11,filterFreq:2200,release:.4}));
+    } else {
+      [392.00,349.23,293.66].forEach((f,i)=> playNote(f,{duration:.34,type:"sawtooth",volMul:.4,when:i*.17,filterFreq:1400,release:.3}));
+    }
+  });
+}
+
+// --- Background music: a gentle 4-chord progression with a light melody on top,
+// scheduled ahead of time (standard Web Audio pattern) so it doesn't drift like setInterval would. ---
+const MUSIC_CHORDS = [
+  [146.83,185.00,220.00],   // D major
+  [123.47,146.83,185.00],   // B minor
+  [98.00,123.47,146.83],    // G major
+  [110.00,138.59,164.81],   // A major
+];
+const MUSIC_MELODY = [
+  293.66,369.99,440.00,369.99,   // over D
+  293.66,349.23,440.00,349.23,   // over Bm
+  246.94,293.66,392.00,293.66,   // over G
+  220.00,277.18,440.00,392.00,   // over A
+];
+
+function scheduleMusicNote(beat, atTime){
+  const ctx = ensureAudioCtx(); if(!ctx) return;
+  const whenOffset = atTime - ctx.currentTime;
+  if(beat % 4 === 0){
+    const chord = MUSIC_CHORDS[Math.floor(beat/4) % MUSIC_CHORDS.length];
+    chord.forEach(f=> playNote(f, {duration:2.1, type:"sine", volMul:.5, when:whenOffset, filterFreq:1400, attack:.4, release:.6}));
+  }
+  const note = MUSIC_MELODY[beat % MUSIC_MELODY.length];
+  playNote(note, {duration:.4, type:"triangle", volMul:.32, when:whenOffset, filterFreq:3400, attack:.02, release:.22});
+}
+
+function musicSchedulerLoop(){
+  const ctx = ensureAudioCtx(); if(!ctx) return;
+  const secondsPerBeat = 60/scheduler.tempo;
+  while(scheduler.nextNoteTime < ctx.currentTime + scheduler.scheduleAhead){
+    scheduleMusicNote(scheduler.beat, scheduler.nextNoteTime);
+    scheduler.nextNoteTime += secondsPerBeat;
+    scheduler.beat = (scheduler.beat+1) % MUSIC_MELODY.length;
+  }
+}
+
+function startMusicLoop(){
+  if(sound.musicOn) return;
+  sound.musicOn = true;
+  if(MUSIC_FILE_PATH){
+    if(!sound.musicEl){ sound.musicEl = new Audio(MUSIC_FILE_PATH); sound.musicEl.loop = true; }
+    sound.musicEl.volume = sound.volume*0.5;
+    sound.musicEl.play().catch(()=>{});
+    return;
+  }
+  const ctx = ensureAudioCtx();
+  if(!ctx) return;
+  scheduler.beat = 0;
+  scheduler.nextNoteTime = ctx.currentTime + 0.05;
+  musicSchedulerLoop();
+  scheduler.timerId = setInterval(musicSchedulerLoop, scheduler.lookahead);
+}
+function stopMusicLoop(){
+  sound.musicOn = false;
+  if(scheduler.timerId){ clearInterval(scheduler.timerId); scheduler.timerId=null; }
+  if(sound.musicEl){ sound.musicEl.pause(); }
+}
+function toggleMusic(){ sound.musicOn ? stopMusicLoop() : startMusicLoop(); }
+function toggleSfx(){ sound.sfxOn = !sound.sfxOn; }
+
+
+/* ============================================================
+   CLIENT GENERATION
+   ============================================================ */
+/* ============================================================
+   DIFFICULTY MODE
+   ============================================================ */
+const DIFFICULTY = {
+  easy:{ label:"Easy", budgetMult:1.3, extraDealbreaker:false, hintsOn:true, forceHardArchetype:false },
+  normal:{ label:"Normal", budgetMult:1.0, extraDealbreaker:false, hintsOn:false, forceHardArchetype:false },
+  hard:{ label:"Hard", budgetMult:0.82, extraDealbreaker:true, hintsOn:false, forceHardArchetype:true },
+};
+let difficulty = "normal";
+
+/* ============================================================
+   PAST CLIENTS (for repeat-booking callbacks)
+   ============================================================ */
+let pastClients = []; // {familyName, quirk, lastGrade}
+
+function generateClient(){
+  const diff = DIFFICULTY[difficulty];
+
+  // Occasionally bring back a past family instead of generating fresh
+  let repeatOf = null;
+  if(pastClients.length && Math.random() < 0.15){
+    repeatOf = pick(pastClients);
+  }
+
+  const isRare = Math.random() < rareClientChance();
+  let pool = isRare ? RARE_ARCHETYPES : ARCHETYPES;
+  let archKey;
+  if(diff.forceHardArchetype && !isRare && Math.random()<0.6){
+    archKey = "multi_gen";
+  } else {
+    archKey = pick(Object.keys(pool));
+  }
+  const arch = pool[archKey];
+  const size = rand(arch.sizeRange[0], arch.sizeRange[1]);
+  const tripLengthDays = rand(arch.tripRange[0], arch.tripRange[1]);
+  const tierPool = archKey==="budget_grinder" ? ["value"] : (archKey==="multi_gen"||archKey==="foodie"||isRare) ? ["moderate","deluxe"] : ["value","moderate","deluxe"];
+  const budgetTier = pick(tierPool);
+  const hotelNightAvg = { value:220, moderate:370, deluxe:750 }[budgetTier];
+  // Big parties need a bigger room (villa pricing scales up fast) — size the hotel budget
+  // component to whatever room type this party would actually have to book.
+  const sampleHotel = HOTELS.find(h=>h.tier===budgetTier) || HOTELS.find(h=>h.tier==="deluxe");
+  const neededRoomType = (sampleHotel && smallestFittingRoomType(sampleHotel, size))
+    || (DELUXE_ROOMS.find(rt=>ROOM_TYPES[rt].capacity>=size))
+    || "grandVilla";
+  const roomMult = ROOM_TYPES[neededRoomType].priceMult;
+  const hotelNightEstimate = hotelNightAvg * roomMult;
+  const perPersonDayAvg = { value:170, moderate:225, deluxe:310 }[budgetTier]; // covers tickets + dining + some LL room
+  const rawBudget = (hotelNightEstimate*tripLengthDays + perPersonDayAvg*size*tripLengthDays) * repBudgetMultiplier() * diff.budgetMult;
+  const budgetTotal = Math.round(rawBudget/50)*50;
+  const familyNames = ["Marlin","Prescott","Ito","Alvarez","Whitfield","Okafor","Chen","Delacroix","Bianchi","Mercer"];
+
+  let mustHaves = [...new Set(arch.mustHaves)];
+  let dealbreakers = [...new Set(arch.dealbreakers)];
+  let quirk = repeatOf ? repeatOf.quirk : null;
+  if(!repeatOf && Math.random() < 0.55){
+    quirk = pick(QUIRKS);
+  }
+  if(quirk && quirk.bonusTag && !mustHaves.includes(quirk.bonusTag)) mustHaves.push(quirk.bonusTag);
+
+  if(diff.extraDealbreaker){
+    const extraPool = ["no_kiddie_rides","no_height_44","no_long_queues","no_qs_only_days","no_ill_spend","no_character_dining"].filter(t=>!dealbreakers.includes(t));
+    if(extraPool.length) dealbreakers.push(pick(extraPool));
+  }
+
+  // ~30% of clients have a specific hotel-related ask — a named resort, a tier they insist on,
+  // or a room type they need for the group. Scored alongside other preferences.
+  let hotelPreference = null;
+  if(Math.random() < 0.3){
+    const prefType = pick(["hotel","tier","roomType"]);
+    if(prefType==="hotel"){
+      const candidates = HOTELS.filter(h=>h.tier===budgetTier && smallestFittingRoomType(h,size));
+      const pool2 = candidates.length ? candidates : HOTELS.filter(h=>smallestFittingRoomType(h,size));
+      const chosen = pick(pool2.length?pool2:HOTELS);
+      hotelPreference = { type:"hotel", value:chosen.id, label:`hopes to stay at ${chosen.name}` };
+    } else if(prefType==="tier"){
+      hotelPreference = { type:"tier", value:budgetTier, label:`wants a genuine ${budgetTier}-tier resort, nothing less` };
+    } else {
+      const rt = neededRoomType;
+      hotelPreference = { type:"roomType", value:rt, label:`needs a ${ROOM_TYPES[rt].label.toLowerCase()} so everyone has space` };
+    }
+  }
+
+  return {
+    id:"c"+Date.now(), familyName: repeatOf ? repeatOf.familyName : "The "+pick(familyNames)+" Family",
+    archetypeKey:archKey, archetype:arch, size, tripLengthDays, budgetTotal, budgetTier,
+    mustHaves, dealbreakers, llAttitude:arch.llAttitude,
+    quirk, isRepeat:!!repeatOf, lastGrade: repeatOf ? repeatOf.lastGrade : null,
+    hotelPreference,
+  };
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let state = null;
+let showOnboarding = true; // shown automatically on first load; can be reopened via "How to Play"
+let showResetConfirm = false;
+let pendingCoop = { enabled:false, agent1:"", agent2:"" }; // set on the client screen, attached to trip state on Start Planning
+
+/* ============================================================
+   COSMETIC THEMES
+   Unlockable alternate color palettes — pure visual flair, no
+   gameplay effect. Applied by overwriting CSS custom properties
+   on the root element.
+   ============================================================ */
+const THEMES = {
+  classic:{ label:"Classic Bureau", swatch:["#EFE2C4","#0C6E6A","#E8A324"], requirement:()=>true, requirementLabel:"Always available", vars:{} },
+  nightfall:{ label:"Nighttime Fireworks", swatch:["#0F1626","#2DD4C7","#FF5C7A"], requirement:()=>career.tripsCompleted>=3, requirementLabel:"Complete 3 trips",
+    vars:{
+      "--paper":"#0F1626","--paper-light":"#1B2740","--ink":"#EDE9DD",
+      "--teal":"#2DD4C7","--teal-light":"#12303A","--teal-dark":"#0A5C56","--teal-glow":"#4CE0D2",
+      "--mustard":"#FFC145","--mustard-light":"#3A2E12","--mustard-deep":"#D89A2E","--gold-glow":"#FFD97A",
+      "--rust":"#FF5C7A","--rust-light":"#3A1420","--rust-glow":"#FF7FA0",
+      "--pop":"#7C6BFF","--pop-light":"#241C40","--line":"#33415C","--line-soft":"#22304A",
+    } },
+  openingDay:{ label:"Opening Day 1971", swatch:["#F4E3C8","#2C7873","#C1432A"], requirement:()=>unlockedAchievements.has("grade_a"), requirementLabel:"Earn an A or A- grade",
+    vars:{
+      "--paper":"#F4E3C8","--paper-light":"#FFF6E6","--ink":"#3B2A1E",
+      "--teal":"#2C7873","--teal-light":"#DCEBE0","--teal-dark":"#1B4B47","--teal-glow":"#45A69C",
+      "--mustard":"#E08E24","--mustard-light":"#F7DDA6","--mustard-deep":"#A8621A","--gold-glow":"#F2B04E",
+      "--rust":"#C1432A","--rust-light":"#F0D2BE","--rust-glow":"#E06840",
+      "--pop":"#D9862B","--pop-light":"#F5E3C6","--line":"#C9AE82","--line-soft":"#E4D2AA",
+    } },
+  pastelSpring:{ label:"Pastel Spring", swatch:["#FBEAF0","#7FB8A4","#E58FA0"], requirement:()=>career.tripsCompleted>=7, requirementLabel:"Complete 7 trips",
+    vars:{
+      "--paper":"#FBEAF0","--paper-light":"#FFF7FA","--ink":"#4A3B45",
+      "--teal":"#7FB8A4","--teal-light":"#E3F2EA","--teal-dark":"#4F8A73","--teal-glow":"#9ED4BC",
+      "--mustard":"#F6C453","--mustard-light":"#FCEBC7","--mustard-deep":"#D89A2E","--gold-glow":"#FADD8C",
+      "--rust":"#E58FA0","--rust-light":"#FBE3E8","--rust-glow":"#F0A8B8",
+      "--pop":"#B79CED","--pop-light":"#EDE3FB","--line":"#E8C9D3","--line-soft":"#F5DEE5",
+    } },
+  neonNights:{ label:"Neon Nights", swatch:["#0A0E1A","#00E5FF","#FF2E88"], requirement:()=>career.prestige>=1, requirementLabel:"Prestige once",
+    vars:{
+      "--paper":"#0A0E1A","--paper-light":"#131A2E","--ink":"#E8F4FF",
+      "--teal":"#00E5FF","--teal-light":"#0D2A38","--teal-dark":"#007A94","--teal-glow":"#4DF3FF",
+      "--mustard":"#FFB800","--mustard-light":"#2E2410","--mustard-deep":"#C98E00","--gold-glow":"#FFD666",
+      "--rust":"#B026FF","--rust-light":"#241030","--rust-glow":"#D466FF",
+      "--pop":"#FF2E88","--pop-light":"#2E0E20","--line":"#1F3050","--line-soft":"#16233D",
+    } },
+};
+let activeTheme = "classic";
+function applyTheme(key){
+  const theme = THEMES[key] || THEMES.classic;
+  const root = document.documentElement;
+  // Reset to classic defaults first, then apply overrides, so switching back to classic works cleanly
+  const allVarNames = new Set(Object.values(THEMES).flatMap(t=>Object.keys(t.vars)));
+  allVarNames.forEach(v=> root.style.removeProperty(v));
+  Object.entries(theme.vars).forEach(([k,v])=> root.style.setProperty(k,v));
+  activeTheme = key;
+}
+let tripLog = []; // in-memory log of completed trips this session (resets on page reload)
+
+/* ============================================================
+   CAREER / REPUTATION / ACHIEVEMENTS
+   ============================================================ */
+const CAREER_TITLES = ["Junior Agent","Agent","Senior Agent","Lead Agent","Master Agent"];
+const career = { xp:0, level:0, tripsCompleted:0, streak:0, aTierEverBooked:new Set(), prestige:0 };
+function careerTitle(){
+  const base = CAREER_TITLES[Math.min(career.level, CAREER_TITLES.length-1)];
+  return career.prestige>0 ? `Prestige ${career.prestige} · ${base}` : base;
+}
+function isMaxLevel(){ return career.level >= CAREER_TITLES.length-1; }
+function prestigeUp(){
+  if(!isMaxLevel()) return;
+  career.prestige++;
+  career.level = 0;
+  career.xp = 0;
+  saveGame();
+}
+function xpForNextLevel(){ return 300 + career.level*250; }
+function awardXp(amount){
+  career.xp += amount;
+  while(career.xp >= xpForNextLevel() && career.level < CAREER_TITLES.length-1){
+    career.xp -= xpForNextLevel();
+    career.level++;
+  }
+}
+// Reputation perks that scale with level: bigger client budgets, one extra LL slot at high level
+function repBudgetMultiplier(){ return 1 + career.level*0.05 + career.prestige*0.05; }
+function repMaxLLPerDay(){ return MAX_LL_PER_DAY + (career.level>=3 ? 1 : 0); }
+// Rare clients become slightly more likely to book with a more established agent
+function rareClientChance(){ return Math.min(0.28, 0.08 + career.level*0.04); }
+
+const ACHIEVEMENTS = [
+  { id:"first_trip", label:"First Booking", desc:"Complete your first trip.", check:(r,c)=>career.tripsCompleted>=1 },
+  { id:"perfect_score", label:"Perfect Itinerary", desc:"Score 100 on a trip.", check:(r,c)=>r.final>=100 },
+  { id:"under_budget", label:"Penny Pincher", desc:"Finish a trip using under 90% of budget without going over.", check:(r,c)=>{ const pct=r.spend.total/c.budgetTotal; return pct<0.9 && pct>0; } },
+  { id:"zero_ll", label:"Standby Only", desc:"Finish a trip with zero Lightning Lane spend.", check:(r,c)=>r.spend.ll===0 },
+  { id:"rare_client", label:"VIP Treatment", desc:"Book a rare special client.", check:(r,c)=>!!(c.archetype && c.archetype.rare) },
+  { id:"grade_a", label:"Five Star Agent", desc:"Earn an A or A- grade.", check:(r,c)=>r.final>=90 },
+  { id:"five_trips", label:"Building a Reputation", desc:"Complete 5 trips.", check:(r,c)=>career.tripsCompleted>=5 },
+  { id:"park_hopper_pro", label:"Two-Park Day", desc:"Successfully plan a day that hops between two parks.", check:(r,c)=>state.days.some(d=>d.secondPark && Object.values(d.items).some(it=>it.kind==="ride"||it.kind==="dining")) },
+
+  // --- Mystery achievements: hidden until unlocked, worth extra XP on top of the normal trip payout ---
+  { id:"myst_worldtour", label:"World Tour", desc:"Book at least one ride in all four parks on a single trip.", hidden:true, bonusXp:120,
+    check:(r,c)=>{ const parksHit = new Set(); state.days.forEach(d=>Object.values(d.items).forEach(it=>{ if(it.kind==="ride"&&it.ridePark) parksHit.add(it.ridePark); })); return parksHit.size>=4; } },
+  { id:"myst_nightowl", label:"Night Owl", desc:"Book something in the 8 PM slot.", hidden:true, bonusXp:60,
+    check:(r,c)=>state.days.some(d=>d.items["8 PM"]) },
+  { id:"myst_bigparty", label:"Full House", desc:"Book a trip for a 6-guest party.", hidden:true, bonusXp:80,
+    check:(r,c)=>c.size>=6 },
+  { id:"myst_longhaul", label:"The Whole Enchilada", desc:"Book a full 7-day trip.", hidden:true, bonusXp:100,
+    check:(r,c)=>c.tripLengthDays>=7 },
+  { id:"myst_perfectstorm", label:"Perfect Storm", desc:"Finish a trip that had both a curveball and an opportunity day.", hidden:true, bonusXp:100,
+    check:(r,c)=>state.curveballDay!=null && state.opportunityDay!=null },
+  { id:"myst_bigspender", label:"Big Spender", desc:"Spend over $6,000 total on a single trip.", hidden:true, bonusXp:90,
+    check:(r,c)=>r.spend.total>6000 },
+  { id:"myst_frugalgenius", label:"Frugal Genius", desc:"Score 90+ using only a value-tier hotel.", hidden:true, bonusXp:140,
+    check:(r,c)=>{ const hotel = HOTELS.find(h=>h.id===state.hotelId); return r.final>=90 && hotel && hotel.tier==="value"; } },
+  { id:"myst_springs", label:"Retail Therapy", desc:"Include a Disney Springs day in the itinerary.", hidden:true, bonusXp:60,
+    check:(r,c)=>state.days.some(d=>d.park==="DS"||d.secondPark==="DS") },
+  { id:"myst_allrest", label:"Slow and Steady", desc:"Include two or more rest days in one trip.", hidden:true, bonusXp:70,
+    check:(r,c)=>state.days.filter(d=>d.dayType==="rest").length>=2 },
+
+  // --- Speed / streak / collection achievements ---
+  { id:"speed_booker", label:"Efficient Agent", desc:"Finish a trip using very few drags — plan lean.", bonusXp:80,
+    check:(r,c)=>(state.dropCount||0)>0 && (state.dropCount||0) <= Math.ceil(c.tripLengthDays*2.5) },
+  { id:"hot_streak", label:"Hot Streak", desc:"Score 90+ on three trips in a row.", bonusXp:150,
+    check:(r,c)=>career.streak>=3 },
+  { id:"tier_list_complete", label:"Tier List Complete", desc:"Book every A-tier ride across all four parks at least once, across all your trips.", hidden:true, bonusXp:200,
+    check:(r,c)=>{ const allA = Object.values(RIDES).flat().filter(rd=>rd.tier==="A").map(rd=>rd.id); return allA.every(id=>career.aTierEverBooked.has(id)); } },
+];
+let unlockedAchievements = new Set();
+let newlyUnlocked = [];
+function checkAchievements(r, c){
+  newlyUnlocked = [];
+  ACHIEVEMENTS.forEach(a=>{
+    if(!unlockedAchievements.has(a.id) && a.check(r,c)){
+      unlockedAchievements.add(a.id);
+      newlyUnlocked.push(a);
+      if(a.bonusXp) awardXp(a.bonusXp);
+    }
+  });
+}
+
+/* ============================================================
+   LOCAL SAVE / LOAD
+   Persists career progress, achievements, trip log, past clients,
+   difficulty, and sound preferences in this browser only — no
+   account, no server, no cross-device sync. Wrapped in try/catch
+   since storage can be unavailable (private browsing, disabled).
+   ============================================================ */
+const SAVE_KEY = "sunshineCoBureau_save_v1";
+
+function saveGame(){
+  try{
+    const payload = {
+      career: { xp:career.xp, level:career.level, tripsCompleted:career.tripsCompleted, streak:career.streak, aTierEverBooked:[...career.aTierEverBooked], prestige:career.prestige },
+      unlockedAchievements: [...unlockedAchievements],
+      tripLog: tripLog.slice(0, 25),
+      pastClients,
+      difficulty,
+      sound: { sfxOn:sound.sfxOn, musicOn:sound.musicOn, volume:sound.volume },
+      activeTheme,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+  }catch(e){ /* storage unavailable — silently skip, game still works without saving */ }
+}
+
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
+    const payload = JSON.parse(raw);
+    if(payload.career){
+      career.xp = payload.career.xp||0;
+      career.level = payload.career.level||0;
+      career.tripsCompleted = payload.career.tripsCompleted||0;
+      career.streak = payload.career.streak||0;
+      career.aTierEverBooked = new Set(payload.career.aTierEverBooked||[]);
+      career.prestige = payload.career.prestige||0;
+    }
+    if(payload.unlockedAchievements) unlockedAchievements = new Set(payload.unlockedAchievements);
+    if(payload.tripLog) tripLog = payload.tripLog;
+    if(payload.pastClients) pastClients = payload.pastClients;
+    if(payload.difficulty) difficulty = payload.difficulty;
+    if(payload.sound){ sound.sfxOn = payload.sound.sfxOn!==false; sound.volume = payload.sound.volume ?? sound.volume; }
+    if(payload.activeTheme && THEMES[payload.activeTheme]) applyTheme(payload.activeTheme);
+  }catch(e){ /* corrupt or unavailable save — start fresh */ }
+}
+
+function resetSaveData(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+  career.xp=0; career.level=0; career.tripsCompleted=0; career.streak=0; career.aTierEverBooked=new Set(); career.prestige=0;
+  unlockedAchievements = new Set();
+  tripLog = [];
+  pastClients = [];
+  difficulty = "normal";
+  applyTheme("classic");
+}
+
+function newGame(coopNames){
+  const client = generateClient();
+  const parks = ["MK","EPCOT","HS","AK"];
+  const curveballDay = client.tripLengthDays>=2 ? rand(2, client.tripLengthDays) : null;
+  let opportunityDay = null;
+  if(client.tripLengthDays>=3 && Math.random()<0.5){
+    do{ opportunityDay = rand(1, client.tripLengthDays); } while(opportunityDay===curveballDay);
+  }
+  let textDay = null;
+  if(client.tripLengthDays>=2 && Math.random()<0.4){
+    do{ textDay = rand(1, client.tripLengthDays); } while(textDay===curveballDay);
+  }
+  const season = pick(Object.keys(SEASONS));
+  const startHotel = HOTELS.find(h=>h.tier===client.budgetTier && smallestFittingRoomType(h, client.size))
+    || HOTELS.find(h=>smallestFittingRoomType(h, client.size))
+    || HOTELS[0];
+  state = {
+    client,
+    parkHopper:false,
+    season,
+    photoPass:false,
+    eventTicket:"none",
+    days: Array.from({length:client.tripLengthDays}, (_,i)=>({
+      dayNumber:i+1, park: parks[i % parks.length], secondPark:null, dayType:"park",
+      crowdSeed: pickWeightedCrowd(season), items:{},
+    })),
+    hotelId: startHotel.id,
+    roomType: smallestFittingRoomType(startHotel, client.size) || "standard",
+    curveballDay, opportunityDay,
+    curveballLabel: pick(["Afternoon rain moves in","A planned ride breaks down","A little one needs an early break","Surprise extended evening hours"]),
+    textDay, textResolved:false,
+    textMessage: pick([
+      "Can we make today a rest day instead? The kids are wiped out.",
+      "Could today be a lighter, hotel-only day? We're more tired than we expected.",
+      "One of us isn't feeling great — can today be a rest day instead?",
+      "We'd love a slower day today, just resting at the hotel.",
+    ]),
+    coop: coopNames ? { agent1:coopNames.agent1||"Agent 1", agent2:coopNames.agent2||"Agent 2", turn:1 } : null,
+    currentDay:1,
+    view:"client",
+    trayFilter:"all",
+    trayPark:"home",
+    planTab:"book",
+    selectedCard:null, // tap-to-select fallback for touch/keyboard, alongside drag-and-drop
+  };
+  render();
+}
+
+function itemCost(item){
+  if(item.kind==="ride") return item.llUsed ? item.price : 0;
+  if(item.kind==="dining") return item.price;
+  return 0;
+}
+function tripSpend(){
+  let hotel=0, tickets=0, dining=0, ll=0, merch=0, extras=0;
+  const nightRate = HOTELS.find(h=>h.id===state.hotelId);
+  const roomMult = (ROOM_TYPES[state.roomType]||ROOM_TYPES.standard).priceMult;
+  hotel = priceInRange(nightRate.price,"Medium") * roomMult * state.client.tripLengthDays;
+  state.days.forEach(day=>{
+    if(day.dayType==="rest"){ /* no ticket cost */ }
+    else if(day.park==="DS"){ merch += DS_MERCH_FEE * state.client.size; }
+    else { tickets += priceInRange(TICKET_PRICE[day.park], day.crowdSeed); }
+
+    let dayHasMultipass = false;
+    Object.values(day.items).forEach(item=>{
+      if(item.kind==="dining") dining += item.price;
+      if(item.kind==="activity") extras += (item.price||0);
+      if(item.kind==="ride" && item.llUsed){
+        if(item.llType==="multipass") dayHasMultipass = true;
+        else if(item.llType==="ill") ll += item.price * state.client.size;
+      }
+    });
+    if(dayHasMultipass) ll += priceInRange(MULTIPASS_PRICE[day.park], day.crowdSeed) * state.client.size;
+  });
+  if(state.parkHopper) tickets += priceInRange(PARK_HOPPER_FEE,"Medium") * state.client.size;
+  tickets *= state.client.size;
+  if(state.photoPass) extras += PHOTOPASS_PRICE;
+  if(state.eventTicket && state.eventTicket!=="none") extras += EVENTS[state.eventTicket].fee * state.client.size;
+  return { hotel, tickets, dining, ll, merch, extras, total: hotel+tickets+dining+ll+merch+extras };
+}
+
+function countLLUsedForDay(day){
+  let n=0, aTier=0;
+  Object.values(day.items).forEach(item=>{
+    if(item.kind==="ride" && item.llUsed && item.llType==="multipass"){
+      n++;
+      if(item.tier==="A") aTier++;
+    }
+  });
+  return { n, aTier };
+}
+function toggleLL(dayNum, slotHour){
+  const day = state.days.find(d=>d.dayNumber===dayNum);
+  const item = day.items[slotHour];
+  if(!item || item.kind!=="ride") return;
+  if(!item.llUsed && item.llType==="multipass"){
+    const { n, aTier } = countLLUsedForDay(day);
+    const cap = repMaxLLPerDay();
+    if(n>=cap){
+      state.llLimitMsg = `Only ${cap} Multi Pass Lightning Lane bookings allowed per day — remove one first. (Individual Lightning Lane rides don't count against this.)`;
+      render(); return;
+    }
+    if(item.tier==="A" && aTier>=MAX_A_TIER_PER_DAY){
+      state.llLimitMsg = `Only ${MAX_A_TIER_PER_DAY} A-tier Lightning Lane ride per day — the rest need to be B-tier.`;
+      render(); return;
+    }
+  }
+  item.llUsed = !item.llUsed;
+  if(item.llUsed) sfxPurchase();
+  state.llLimitMsg = null;
+  render();
+}
+
+function findRidePark(rideId){
+  return Object.keys(RIDES).find(p => RIDES[p].some(r=>r.id===rideId));
+}
+
+function dropItem(dayNum, slotHour, payload){
+  const day = state.days.find(d=>d.dayNumber===dayNum);
+  const dayHours = hoursForDay(day);
+  const hourIdx = curveIndexFor(dayHours, slotHour);
+  if(payload.kind==="travel"){
+    if(day.items[slotHour]){ state.llLimitMsg = "That slot is already booked."; render(); return; }
+    day.items[slotHour] = { kind:"travel", name:payload.label, span:1 };
+  } else if(payload.kind==="activity"){
+    const need = payload.hours || 1;
+    const rawIdx = dayHours.indexOf(slotHour);
+    const neededSlots = [];
+    for(let i=0;i<need;i++) neededSlots.push(dayHours[rawIdx+i]);
+    if(neededSlots.some(s=>!s)){ state.llLimitMsg = `That's a ${need}-hour booking and there isn't enough day left — try an earlier slot.`; render(); return; }
+    if(neededSlots.some(s=>day.items[s])){ state.llLimitMsg = "That time is already booked — pick a clearer stretch."; render(); return; }
+    const price = payload.price[1]===0 ? 0 : priceInRange(payload.price, "Medium");
+    day.items[slotHour] = { kind:"activity", id:payload.id, name:`${payload.name} (${need} hr)`, price, span:need };
+    for(let i=1;i<need;i++) day.items[neededSlots[i]] = { kind:"spanned", parentHour:slotHour };
+  } else if(payload.kind==="ride"){
+    if(payload.ride.type==="fireworks" && slotHour!==FIREWORKS_TIME){
+      state.llLimitMsg = `${payload.ride.name} only happens at ${FIREWORKS_TIME} — try that slot instead.`;
+      render(); return;
+    }
+    const ridePark = findRidePark(payload.ride.id) || day.park;
+    const hotelObj = HOTELS.find(h=>h.id===state.hotelId);
+    const earlyEntry = !!(hotelObj && hotelObj.earlyEntry && day.dayType!=="rest" && day.park!=="DS");
+    const wait = currentWait(payload.ride, hourIdx, day.crowdSeed, earlyEntry);
+    const isOpportunityDay = state.opportunityDay===day.dayNumber;
+    const price = payload.ride.ll==="ill"
+      ? Math.round(priceInRange(payload.ride.illPrice, day.crowdSeed) * (isOpportunityDay ? 0.7 : 1))
+      : priceInRange(MULTIPASS_PRICE[ridePark], day.crowdSeed);
+    const needsTwoHours = wait > 60;
+    if(needsTwoHours){
+      const rawIdx = dayHours.indexOf(slotHour);
+      const nextHour = dayHours[rawIdx+1];
+      if(!nextHour){ state.llLimitMsg = "This ride takes over an hour and won't fit this late in the day — try an earlier slot."; render(); return; }
+      if(day.items[nextHour]){ state.llLimitMsg = "This ride takes over an hour, but the next slot is already booked."; render(); return; }
+      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:2 };
+      day.items[nextHour] = { kind:"spanned", parentHour:slotHour };
+    } else {
+      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:1 };
+    }
+  } else {
+    const price = priceInRange(payload.restaurant.price, "Medium");
+    day.items[slotHour] = { kind:"dining", id:payload.restaurant.id, name:payload.restaurant.name, price, exclusive:!!payload.restaurant.exclusive };
+  }
+  state.llLimitMsg = null;
+  state.dropCount = (state.dropCount||0) + 1;
+  sfxDrop();
+  render();
+}
+function removeItem(dayNum, slotHour){
+  const day = state.days.find(d=>d.dayNumber===dayNum);
+  const item = day.items[slotHour];
+  if(item && item.span>1){
+    const dayHours = hoursForDay(day);
+    const rawIdx = dayHours.indexOf(slotHour);
+    for(let i=1;i<item.span;i++){
+      const h = dayHours[rawIdx+i];
+      if(h) delete day.items[h];
+    }
+  }
+  delete day.items[slotHour];
+  sfxRemove();
+  render();
+}
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function bookedTagSet(){
+  const tags = new Set();
+  const bookedRideIds = new Set();
+  let illCount=0, mpCount=0, illOnFandom=false;
+  state.days.forEach(day=>{
+    Object.values(day.items).forEach(item=>{
+      if(item.kind==="ride"){
+        bookedRideIds.add(item.id);
+        const ride = Object.values(RIDES).flat().find(r=>r.id===item.id);
+        if(ride.thrill==="intense") tags.add("ride_intense");
+        if(ride.thrill==="moderate") tags.add("ride_moderate");
+        if(ride.thrill==="mild") tags.add("ride_mild"), tags.add("low_mobility");
+        if(ride.ll==="ill" && item.llUsed) tags.add("ill_priority"), illCount++;
+        if(ride.ll==="multipass" && item.llUsed) mpCount++;
+        if(ride.height && ride.height>=44) tags.add("no_height_44_violated");
+        if(["hs_rise","hs_falcon","ep_guardians","ak_flight_of_passage"].includes(ride.id)) tags.add("fandom_ride");
+        if(ride.type==="meetgreet") tags.add("meet_greet");
+      }
+      if(item.kind==="dining" && item.exclusive) tags.add("park_exclusive_item");
+      if(item.kind==="dining" && item.id.startsWith("hd_")){ tags.add("named_restaurant"); tags.add("signature_ts"); }
+      if(item.kind==="dining" && item.id!=="hotel_qs" && !item.id.startsWith("snack_") && !item.id.startsWith("souv_") && !item.id.startsWith("shop_") && !item.id.startsWith("event_treat_") && !item.id.startsWith("fest_") && !item.id.startsWith("hd_")){
+        const rest = Object.values(RESTAURANTS).flat().find(r=>r.id===item.id);
+        if(rest.type==="character") tags.add("character_meal");
+        if(rest.type==="TS") tags.add("named_restaurant"), tags.add("signature_ts");
+        if(rest.type==="QS") tags.add("qs_only");
+      }
+      if(item.kind==="activity" && item.id==="resort_pool") tags.add("rest_breaks");
+    });
+  });
+  return { tags, illCount, mpCount, bookedRideIds };
+}
+
+function buildReportCard(){
+  const spend = tripSpend();
+  const { tags, illCount, mpCount, bookedRideIds } = bookedTagSet();
+  const c = state.client;
+
+  // Budget adherence (40)
+  const pct = spend.total / c.budgetTotal;
+  let budgetScore, budgetNote;
+  if(pct>1){ budgetScore = Math.max(0, 100-(pct-1)*400); budgetNote = `Went over budget by ${Math.round((pct-1)*100)}%.`; }
+  else if(pct<0.85){ budgetScore = Math.max(60,100-(0.85-pct)*200); budgetNote = `Left ${Math.round((1-pct)*100)}% of the budget unspent.`; }
+  else { budgetScore = 100-Math.abs(1-pct)*50; budgetNote = `Used ${Math.round(pct*100)}% of the client's budget — right in the sweet spot.`; }
+
+  // Trip value (30)
+  let valueScore = 100; let valueNotes=[];
+  if(c.llAttitude==="no_spend" && (illCount>0||mpCount>0)){ valueScore-=40; valueNotes.push("Client didn't want Lightning Lane spend, but it was booked anyway."); }
+  if(c.llAttitude==="wants_top_2_only" && (illCount+mpCount)>2){ valueScore-=15; valueNotes.push("Lightning Lane spend went beyond the client's top priorities."); }
+  if(valueNotes.length===0) valueNotes.push("Lightning Lane spend matched what this client actually wanted.");
+  if(c.hotelPreference){
+    const hp = c.hotelPreference;
+    const bookedHotel = HOTELS.find(h=>h.id===state.hotelId);
+    const hotelMatched = hp.type==="hotel" ? state.hotelId===hp.value
+      : hp.type==="tier" ? (bookedHotel && bookedHotel.tier===hp.value)
+      : state.roomType===hp.value;
+    if(hotelMatched){ valueNotes.push(`They ${hp.label} — and that's exactly what got booked.`); }
+    else { valueScore -= 15; valueNotes.push(`They ${hp.label}, but the booking didn't match.`); }
+  }
+
+  // Preference match (20)
+  const met = c.mustHaves.filter(t=>tags.has(t));
+  let prefScore = Math.round((met.length/c.mustHaves.length)*100);
+  const dealbreakerHit = c.dealbreakers.some(t=>{
+    if(t==="no_height_44") return tags.has("no_height_44_violated");
+    if(t==="no_ill_spend") return illCount>0;
+    if(t==="no_character_dining") return tags.has("character_meal");
+    return false;
+  });
+  let prefFinal = dealbreakerHit ? Math.max(0,prefScore-25) : prefScore;
+  let prefNote = dealbreakerHit ? "A dealbreaker slipped into the itinerary." : `${met.length} of ${c.mustHaves.length} must-haves were booked.`;
+  if(c.quirk && c.quirk.avoidRideId && bookedRideIds.has(c.quirk.avoidRideId)){
+    prefFinal = Math.max(0, prefFinal-15);
+    prefNote += " Also — they specifically hoped to avoid one ride that ended up on the itinerary.";
+  }
+
+  // Efficiency (10) — total wait vs a light benchmark
+  let totalWait=0, count=0;
+  state.days.forEach(day=>Object.values(day.items).forEach(item=>{ if(item.kind==="ride"){ totalWait+=item.wait; count++; } }));
+  const benchmark = count*22;
+  const effScore = count===0 ? 50 : Math.max(0, Math.min(100, 100-((totalWait-benchmark)/Math.max(benchmark,1))*80));
+  const effNote = count===0 ? "No rides were booked to evaluate pacing." : `Total standby time: ${totalWait} min across ${count} rides.`;
+
+  const final = Math.round(budgetScore*0.4 + valueScore*0.3 + prefFinal*0.2 + effScore*0.1);
+  const grade = final>=93?"A":final>=90?"A-":final>=87?"B+":final>=83?"B":final>=80?"B-":final>=77?"C+":final>=73?"C":final>=70?"C-":final>=60?"D":"F";
+
+  // The single must-have the client cared about most (first in their list) — used to give the
+  // family letter one specific, concrete moment to react to instead of only generic feedback.
+  const bigMomentTag = c.mustHaves[0];
+  const bigMoment = { tag:bigMomentTag, label:TAG_LABELS[bigMomentTag]||bigMomentTag, met: tags.has(bigMomentTag) };
+
+  return { final, grade, budgetScore:Math.round(budgetScore), valueScore:Math.round(valueScore), prefScore:prefFinal, effScore:Math.round(effScore),
+    feedback:[budgetNote, ...valueNotes, prefNote, effNote], spend, bigMoment };
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  const app = document.getElementById("app");
+  if(state && state.view==="client") app.innerHTML = renderClientScreen();
+  else if(state && state.view==="plan") app.innerHTML = renderPlanScreen();
+  else if(state && state.view==="report"){
+    app.innerHTML = renderReportScreen();
+    if(!state.reportSoundPlayed){ state.reportSoundPlayed = true; sfxGrade(lastReportPassed); }
+  }
+  else app.innerHTML = renderHome();
+  wireEvents();
+}
+
+function renderResetConfirmModal(){
+  return `
+    <div class="overlay" id="resetConfirmOverlay">
+      <div class="drawer" style="width:400px;">
+        <h3 style="font-family:var(--serif);font-size:19px;text-transform:none;letter-spacing:0;">Reset your save?</h3>
+        <p class="sans" style="font-size:13px;color:#443f33;line-height:1.6;">This clears your career level, achievements, and trip log for good. There's no undo.</p>
+        <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px;">
+          <button class="btn secondary" id="cancelResetBtn">Cancel</button>
+          <button class="btn" id="confirmResetBtn">Reset everything</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOnboardingOverlay(){
+  return `
+    <div class="overlay" id="onboardingOverlay">
+      <div class="drawer" style="width:520px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">How to Play</h3>
+        <div class="sans" style="font-size:13px;line-height:1.7;color:#443f33;">
+          <p><b>1. Meet your client.</b> Each family has a budget, must-haves, dealbreakers, and sometimes a quirk. Check the Client Brief tab anytime.</p>
+          <p><b>2. Book their trip.</b> On the Book tab, drag a ride or restaurant onto a time slot — or, if you're on a touch device or prefer keyboard, tap/click a card to select it, then tap/click an empty time slot to place it there.</p>
+          <p><b>3. Watch the budget.</b> The pill up top tracks live spend. Lightning Lane is capped at 3 per day, with only 1 "A tier" ride allowed per day.</p>
+          <p><b>4. Set up the trip.</b> Pick a hotel and decide on Park Hopper from the Trip Setup tab.</p>
+          <p><b>5. Finish and get graded.</b> Your report card scores budget, value, preferences, and efficiency — then the family sends you a letter about how it went.</p>
+          <p style="margin-bottom:0;">Watch for curveballs (bad luck) and opportunities (discounts) on random days, and keep an eye out for hidden achievements.</p>
+        </div>
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeOnboarding">Got it</button></div>
+      </div>
+    </div>
+  `;
+}
+function renderHome(){
+  const xpPct = Math.min(100, Math.round((career.xp/xpForNextLevel())*100));
+  return `
+    <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Est. for agents who plan the impossible</span></div>
+    <div class="home-hero">
+      <div class="pixie-dust" aria-hidden="true">
+        ${Array.from({length:22}).map(()=>{
+          const left=(Math.random()*100).toFixed(1), top=(Math.random()*100).toFixed(1);
+          const size=(3+Math.random()*4).toFixed(1), dur=(2+Math.random()*2.5).toFixed(2), delay=(Math.random()*3).toFixed(2);
+          return `<span class="sparkle" style="left:${left}%; top:${top}%; width:${size}px; height:${size}px; animation-duration:${dur}s; animation-delay:${delay}s;"></span>`;
+        }).join("")}
+      </div>
+      <svg class="skyline" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+        <circle cx="400" cy="70" r="46" fill="var(--gold-glow)"/>
+        <g stroke="var(--mustard-deep)" stroke-width="3" stroke-linecap="round">
+          <line x1="400" y1="2" x2="400" y2="16"/>
+          <line x1="330" y1="20" x2="340" y2="30"/>
+          <line x1="470" y1="20" x2="460" y2="30"/>
+          <line x1="300" y1="70" x2="314" y2="70"/>
+          <line x1="500" y1="70" x2="486" y2="70"/>
+        </g>
+        <!-- hidden mickey easter egg, tucked into the sky -->
+        <g fill="var(--paper-light)" opacity="0.5">
+          <circle cx="180" cy="40" r="10"/><circle cx="165" cy="27" r="5"/><circle cx="197" cy="27" r="5"/>
+        </g>
+        <g fill="var(--teal-dark)">
+          <rect x="120" y="130" width="26" height="70"/><polygon points="120,130 133,105 146,130"/>
+          <rect x="655" y="130" width="26" height="70"/><polygon points="655,130 668,105 681,130"/>
+          <rect x="340" y="95" width="34" height="105"/><polygon points="340,95 357,68 374,95"/>
+          <rect x="426" y="95" width="34" height="105"/><polygon points="426,95 443,68 460,95"/>
+          <rect x="378" y="70" width="44" height="130"/><polygon points="378,70 400,38 422,70"/>
+        </g>
+        <polygon points="400,38 400,20 416,29" fill="var(--pop)"/>
+        <line x1="400" y1="38" x2="400" y2="18" stroke="var(--teal-dark)" stroke-width="2"/>
+        <path d="M0,205 Q200,185 400,205 T800,205 V220 H0 Z" fill="var(--teal)"/>
+      </svg>
+      <h1 class="shimmer-text">Welcome, Agent.</h1>
+      <div class="sub">Book real families onto their dream Disney World trip — on budget, on brand, on time.</div>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>Career progress</h3>
+      <div class="bar-row">
+        <div class="label"><span><b>${careerTitle()}</b> · Level ${career.level+1}</span><span>${career.tripsCompleted} trips booked</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${xpPct}%"></div></div>
+      </div>
+      <p style="margin-top:8px;font-size:11.5px;color:#8a8267;">
+        ${career.level>=3 ? `You've earned a 4th Lightning Lane slot per day. ` : `Reach level 4 to unlock a 4th daily Lightning Lane slot. `}
+        Higher-level agents also get bigger client budgets and see more rare bookings.
+      </p>
+      ${isMaxLevel() ? `<p style="margin-top:10px;font-size:11.5px;color:var(--rust);background:var(--rust-light);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <span>⭐ You've maxed out as ${CAREER_TITLES[CAREER_TITLES.length-1]}. Prestige to reset your level for a permanent +5% budget bonus.</span>
+        <button class="btn secondary" id="prestigeBtn" style="white-space:nowrap;">Prestige</button>
+      </p>` : ''}
+      <p style="margin-top:10px;font-size:11px;color:#8a8267;display:flex;justify-content:space-between;align-items:center;">
+        <span>💾 Progress auto-saves in this browser after every trip — no account needed.</span>
+        <button class="btn secondary" id="resetSaveBtn" style="font-size:10.5px;padding:5px 10px;white-space:nowrap;margin-left:10px;">Reset save</button>
+      </p>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>Difficulty</h3>
+      <div class="tray-filter" style="margin-bottom:8px;">
+        ${Object.keys(DIFFICULTY).map(k=>`<button data-difficulty="${k}" class="${difficulty===k?'on':''}">${DIFFICULTY[k].label}</button>`).join("")}
+      </div>
+      <p style="font-size:11.5px;color:#8a8267;">
+        ${difficulty==="easy" ? "Bigger budgets, no forced tough archetypes." :
+          difficulty==="hard" ? "Tighter budgets, biased toward multi-generation clients, one extra dealbreaker." :
+          "The standard experience."}
+      </p>
+    </div>
+    <div class="home-actions">
+      <button class="btn" id="startBooking">Start booking clients</button>
+      <div style="margin-top:12px;"><button class="btn secondary" id="howToPlayBtn" style="font-size:12px;padding:8px 16px;">❓ How to Play</button></div>
+    </div>
+    ${showOnboarding ? renderOnboardingOverlay() : ""}
+    ${showResetConfirm ? renderResetConfirmModal() : ""}
+    <div class="home-panels">
+      <div class="home-panel">
+        <h3>Credits</h3>
+        <p><b>Designed &amp; built by:</b> you, with Claude (Anthropic) as coding partner.</p>
+        <p>All ride, hotel, and restaurant names belong to Disney and are used here purely for a personal, non-commercial fan-made planning game. Pricing is illustrative and approximate, not official.</p>
+        <p>Sound effects and music are generated live in your browser — no external files, nothing to download.</p>
+      </div>
+      <div class="home-panel">
+        <h3>Sound settings</h3>
+        <div class="sound-row">
+          <label><input type="checkbox" id="sfxToggle" ${sound.sfxOn?'checked':''}> Sound effects</label>
+        </div>
+        <div class="sound-row">
+          <label><input type="checkbox" id="musicToggle" ${sound.musicOn?'checked':''}> Background music</label>
+        </div>
+        <div class="sound-row">
+          <label>Volume</label>
+          <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="${sound.volume}">
+        </div>
+        <p style="margin-top:14px;">Want to swap in your own music or sound effects? Open this file in a text editor, find <code>MUSIC_FILE_PATH</code> and <code>SFX_FILES</code> near the top of the script, and point them at your own mp3 files sitting in the same folder as this HTML file.</p>
+      </div>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
+      <h3>Achievements (${unlockedAchievements.size}/${ACHIEVEMENTS.length})</h3>
+      <div class="pill-list">
+        ${ACHIEVEMENTS.map(a=>{
+          const done = unlockedAchievements.has(a.id);
+          if(a.hidden && !done) return `<span class="pill avoid" title="Mystery achievement — keep playing to discover it.">🌫️ ???</span>`;
+          const icon = done ? (a.hidden ? '🌟' : '🏆') : '🔒';
+          const title = done && a.bonusXp ? `${a.desc} (+${a.bonusXp} XP bonus)` : a.desc;
+          return `<span class="pill ${done?'want':'avoid'}" title="${title}">${icon} ${a.label}</span>`;
+        }).join("")}
+      </div>
+      <p style="margin-top:10px;font-size:11px;color:#8a8267;">🌫️ Mystery achievements are hidden until you stumble into them — they pay out bonus XP on top of the normal trip reward.</p>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
+      <h3>Themes</h3>
+      <div class="home-panels" style="max-width:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+        ${Object.entries(THEMES).map(([key,t])=>{
+          const unlocked = t.requirement();
+          const active = activeTheme===key;
+          return `
+          <div style="text-align:center;padding:12px;border:1px solid var(--line-soft);border-radius:10px;${active?'box-shadow:var(--glow-teal);border-color:var(--teal);':''}">
+            <div style="display:flex;justify-content:center;gap:4px;margin-bottom:8px;">
+              ${t.swatch.map(c=>`<span style="width:16px;height:16px;border-radius:50%;background:${c};display:inline-block;border:1px solid rgba(0,0,0,.15);"></span>`).join("")}
+            </div>
+            <div style="font-weight:700;font-size:12px;margin-bottom:6px;">${t.label}</div>
+            ${unlocked
+              ? `<button class="btn ${active?'':'secondary'}" data-theme-choice="${key}" style="font-size:11px;padding:6px 12px;" ${active?'disabled':''}>${active?'Active':'Apply'}</button>`
+              : `<div style="font-size:10.5px;color:#8a8267;">🔒 ${t.requirementLabel}</div>`}
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+    ${tripLog.length ? `
+    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
+      <h3>Best trips this session</h3>
+      ${tripLog.slice(0,10).map((t,i)=>`
+        <div class="log-row">
+          <span class="log-rank">#${i+1}</span>
+          <span class="log-name">${t.familyName}</span>
+          <span class="log-meta">${t.archetype} · ${t.size} guests · ${t.tripLengthDays}d</span>
+          <span class="log-grade">${t.grade}</span>
+          <span class="log-score">${t.score}/100</span>
+        </div>`).join("")}
+      <p style="margin-top:12px;font-size:11.5px;color:#8a8267;">This log lives only in your browser's memory for this session — reloading the page clears it. Want it to persist across visits? Add a <code>localStorage</code> save/load pair around the <code>tripLog</code> array near the top of the script.</p>
+    </div>` : ''}
+  `;
+}
+
+function renderClientScreen(){
+  const c = state.client;
+  return `
+    <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">${careerTitle()} · Level ${career.level+1}</span></div>
+    <div class="client-card">
+      <div class="eyebrow">${c.isRepeat ? "↩ Returning client" : c.archetype.rare ? "★ Rare booking" : "New booking request"}</div>
+      <h2>${c.familyName}</h2>
+      ${c.isRepeat ? `<p class="sans" style="font-size:12.5px;color:var(--teal-dark);background:var(--teal-light);border-radius:8px;padding:8px 12px;margin-bottom:12px;">They're back! Last time you booked them, they gave you a ${c.lastGrade}. Let's see if you can top it.</p>` : ''}
+      <div class="client-row">
+        <div><b>Party size</b>${c.size} guests</div>
+        <div><b>Trip length</b>${c.tripLengthDays} days</div>
+        <div><b>Budget</b>${fmtMoney(c.budgetTotal)} total (${c.budgetTier})</div>
+        <div><b>Profile</b>${c.archetype.label}</div>
+      </div>
+      <p class="sans" style="font-size:13px;color:#5b5646;">${c.archetype.flavor}</p>
+      ${c.quirk ? `<p class="sans" style="font-size:12.5px;color:var(--rust);background:var(--rust-light);border-radius:8px;padding:8px 12px;margin-top:6px;">📝 ${c.quirk.text}</p>` : ''}
+      ${c.hotelPreference ? `<p class="sans" style="font-size:12.5px;color:var(--mustard-deep);background:var(--mustard-light);border-radius:8px;padding:8px 12px;margin-top:6px;">🏨 They ${c.hotelPreference.label}.</p>` : ''}
+      <div class="sans" style="font-size:12px;">
+        <b style="display:block;text-transform:uppercase;color:var(--teal-dark);margin-bottom:4px;">Must-haves</b>
+        <div class="pill-list">${c.mustHaves.map(t=>`<span class="pill want">${TAG_LABELS[t]||t}</span>`).join("")}</div>
+      </div>
+      <div class="sans" style="font-size:12px;margin-top:10px;">
+        <b style="display:block;text-transform:uppercase;color:var(--rust);margin-bottom:4px;">Dealbreakers</b>
+        <div class="pill-list">${c.dealbreakers.length? c.dealbreakers.map(t=>`<span class="pill avoid">${TAG_LABELS[t]||t}</span>`).join("") : '<span class="pill avoid">None stated</span>'}</div>
+      </div>
+      <div class="sans" style="margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;"><input type="checkbox" id="coopToggle" ${pendingCoop.enabled?'checked':''}> 🎮 Co-op mode (pass and play with a second agent)</label>
+        ${pendingCoop.enabled ? `
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <input type="text" id="coopName1" placeholder="Agent 1 name" value="${pendingCoop.agent1}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
+          <input type="text" id="coopName2" placeholder="Agent 2 name" value="${pendingCoop.agent2}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
+        </div>` : ''}
+      </div>
+      <div class="client-actions">
+        <button class="btn" id="startPlan">Start planning</button>
+        <button class="btn secondary" id="rerollClient">New client</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPlanScreen(){
+  const c = state.client;
+  const spend = tripSpend();
+  const over = spend.total > c.budgetTotal;
+  if(!state.planTab) state.planTab = "book";
+  const day = state.days.find(d=>d.dayNumber===state.currentDay);
+  const park = day.park;
+  const isRest = day.dayType==="rest";
+  const trayParkCode = (day.secondPark && state.trayPark==="second") ? day.secondPark : park;
+  const isDS = trayParkCode==="DS" && !isRest;
+  const allParkRides = RIDES[trayParkCode]||[];
+  const rideList = allParkRides.filter(r=>r.type!=="show" && r.type!=="fireworks");
+  const showList = allParkRides.filter(r=>r.type==="show");
+  const fireworksList = allParkRides.filter(r=>r.type==="fireworks");
+  const diningList = RESTAURANTS[trayParkCode]||[];
+
+  const rideIcon = (r)=> r.type==="meetgreet" ? "🤝" : r.thrill==="intense" ? "🎢" : r.thrill==="moderate" ? "🎡" : "🎠";
+  const diningIcon = (d)=> d.type==="character" ? "👑" : d.type==="TS" ? "🍽️" : "🥤";
+
+  const isSelected = (kind,id)=> state.selectedCard && state.selectedCard.kind===kind && state.selectedCard.id===id;
+  const showRides = state.trayFilter==="all" || state.trayFilter==="ride";
+  const showShows = state.trayFilter==="all" || state.trayFilter==="show";
+  const showFireworks = state.trayFilter==="all" || state.trayFilter==="fireworks";
+  const showDining = state.trayFilter==="all" || state.trayFilter==="dining";
+  const showSnacks = state.trayFilter==="all" || state.trayFilter==="snack";
+  const showShop = state.trayFilter==="all" || state.trayFilter==="shop";
+
+  const trayItems = (isRest || isDS || !showRides) ? "" : rideList.map(r=>`
+    <div class="card ${r.ll==='ill'?'ill':''} ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}">
+      <div class="name">${rideIcon(r)} ${r.name}${r.tier?` <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${r.tier==='A'?'var(--rust-light)':'var(--teal-light)'};color:${r.tier==='A'?'var(--rust)':'var(--teal-dark)'};">${r.tier} tier</span>`:''}</div>
+      <div class="meta"><span>${r.type==='meetgreet'?'Meet & Greet':r.thrill}${r.height?` · ${r.height}in+`:''}</span><span>${r.ll==='ill'?'ILL':r.ll==='multipass'?'Multi Pass':'Standby'}</span></div>
+    </div>`).join("");
+  const trayShows = (isRest || isDS || !showShows) ? "" : showList.map(r=>`
+    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}">
+      <div class="name">🎭 ${r.name}</div>
+      <div class="meta"><span>Show</span><span>Standby</span></div>
+    </div>`).join("");
+  const trayFireworks = (isRest || isDS || !showFireworks) ? "" : fireworksList.map(r=>`
+    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}" style="border-left:4px solid var(--pop);">
+      <div class="name">🎆 ${r.name}</div>
+      <div class="meta"><span>Only at ${FIREWORKS_TIME}</span><span>Free</span></div>
+    </div>`).join("") || (showFireworks && !isRest && !isDS ? `<p class="sans" style="font-size:11.5px;color:#8a8267;">No fireworks show at this park.</p>` : "");
+  const trayDining = isRest
+    ? (showDining ? `
+      <div class="card dining ${isSelected('hotelDining','hotel_dining')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('hotelDining','hotel_dining')}" data-kind="hotelDining" data-id="hotel_dining">
+        <div class="name">🍽️ Hotel dining</div>
+        <div class="meta"><span>Quick service${HOTEL_DINING[state.hotelId]?' or a signature restaurant':''}</span><span>Pick on booking</span></div>
+      </div>` : "")
+    : (!showDining ? "" : diningList.map(rest=>`
+      <div class="card dining ${isSelected('dining',rest.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('dining',rest.id)}" data-kind="dining" data-id="${rest.id}">
+        <div class="name">${diningIcon(rest)} ${rest.name}</div>
+        <div class="meta"><span>${rest.type}</span><span>${fmtMoney(priceInRange(rest.price,"Medium"))}/pp</span></div>
+      </div>`).join(""));
+  const traySnack = (isRest || !showSnacks) ? "" : `
+    <div class="card dining ${isSelected('snack','snack_cart')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('snack','snack_cart')}" data-kind="snack" data-id="snack_cart">
+      <div class="name">🍿 Snack cart</div>
+      <div class="meta"><span>Churro, popcorn, pretzel & more</span><span>Pick on booking</span></div>
+    </div>`;
+  const trayShop = (isRest || !showShop) ? "" : `
+    <div class="card dining ${isSelected('shop','shop_cart')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('shop','shop_cart')}" data-kind="shop" data-id="shop_cart">
+      <div class="name">🛍️ Souvenir stand</div>
+      <div class="meta"><span>Keepsakes, plush, apparel & more</span><span>Pick on booking</span></div>
+    </div>`;
+  const trayActivities = !isRest ? "" : `
+    <div class="card dining ${isSelected('activity','resort_activities')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('activity','resort_activities')}" data-kind="activity" data-id="resort_activities">
+      <div class="name">🏖️ Resort activities</div>
+      <div class="meta"><span>Pool, fishing${RESORT_ACTIVITIES.resort_spa.availableAt.includes(state.hotelId)?', spa':''}</span><span>Pick length & booking</span></div>
+    </div>`;
+
+  const dayHours = hoursForDay(day);
+  const slots = dayHours.map(h=>{
+    const item = day.items[h];
+    let content, dropAttrs = `data-slot="${h}" role="button" tabindex="0" aria-label="${h} — ${item?item.name:(state.selectedCard?'Tap to place '+state.selectedCard.label:'Empty')}"`;
+    if(!item){
+      content = state.selectedCard
+        ? `<span style="color:var(--teal); font-size:11.5px; font-family:var(--sans); font-weight:600;">Tap to place "${state.selectedCard.label}"</span>`
+        : `<span style="color:#c9bd9c; font-size:11.5px; font-family:var(--sans);">+ Drag or tap-to-place</span>`;
+    }
+    else if(item.kind==="spanned"){
+      content = `<div class="stub" style="background:transparent;border-style:solid;opacity:.5;font-size:11px;">continues from ${item.parentHour}</div>`;
+      dropAttrs = ""; // not a drop target, part of the ride above
+    }
+    else if(item.kind==="ride"){
+      content = `<div class="stub"><div><b>${item.name}</b>${item.span===2?' <span style="font-size:10px;color:#7a5314;">(2 hr)</span>':''}${item.tier?` <span style="font-size:10px;color:#7a5314;">[${item.tier} tier]</span>`:''}<div class="wait">${item.wait} min standby${item.llType!=='none'?` · <a href="#" data-ll-toggle="${h}" style="color:var(--teal-dark);">${item.llUsed?`LL used (${fmtMoney(item.price)})`:'Use Lightning Lane'}</a>`:''}</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
+    } else if(item.kind==="travel"){
+      content = `<div class="stub" style="background:var(--rust-light);border-color:var(--rust);"><div><b>${item.name}</b><div class="wait">Switching parks</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
+    } else if(item.kind==="activity"){
+      const icon = item.id==="resort_fishing" ? "🎣" : item.id==="resort_spa" ? "💆" : "🏊";
+      content = `<div class="stub dining"><div><b>${icon} ${item.name}</b><div class="wait">${item.price ? fmtMoney(item.price) : 'Free — resort amenity'}</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
+    } else {
+      content = `<div class="stub dining"><div><b>${item.name}</b><div class="wait">${fmtMoney(item.price)}/pp</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
+    }
+    return `<div class="slot-row"><div class="slot-time">${h}</div><div class="slot-drop" ${dropAttrs}>${content}</div></div>`;
+  }).join("");
+
+  const isExtendedHoursDay = state.curveballDay===day.dayNumber && state.curveballLabel==="Surprise extended evening hours";
+  const isRainDay = state.curveballDay===day.dayNumber && state.curveballLabel==="Afternoon rain moves in";
+  const rainOverlay = isRainDay ? `<div class="rain-overlay">${Array.from({length:36}).map(()=>{
+    const left = Math.random()*100;
+    const dur = (0.6 + Math.random()*0.6).toFixed(2);
+    const delay = (Math.random()*1.2).toFixed(2);
+    return `<span class="raindrop" style="left:${left}%; animation-duration:${dur}s; animation-delay:-${delay}s;"></span>`;
+  }).join("")}</div>` : "";
+  const curveballBanner = state.curveballDay===day.dayNumber
+    ? (isExtendedHoursDay
+        ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">✨ Curveball — Surprise extended evening hours! The park stays open until 11 PM today — two extra hour slots just opened up below.</div>`
+        : `<div class="curveball-banner">Curveball — ${state.curveballLabel}. Plan around it today.</div>`)
+    : "";
+  const opportunityBanner = state.opportunityDay===day.dayNumber
+    ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">Opportunity — Individual Lightning Lane rides are 30% off today only. Worth grabbing one.</div>` : "";
+  const textBanner = (state.textDay===day.dayNumber && !state.textResolved)
+    ? `<div class="curveball-banner" style="background:var(--pop-light);border-color:var(--pop);color:#8a1f3a;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span>📱 Text from the family: "${state.textMessage}"</span>
+        <span style="display:flex;gap:6px;"><button class="btn secondary" id="declineTextBtn" style="font-size:11px;padding:6px 12px;">Not today</button><button class="btn" id="acceptTextBtn" style="font-size:11px;padding:6px 12px;">Make it a rest day</button></span>
+      </div>` : "";
+  const llLimitBanner = state.llLimitMsg
+    ? `<div class="curveball-banner">${state.llLimitMsg}</div>` : "";
+
+  const moodTagSet = bookedTagSet();
+  const metSoFar = c.mustHaves.filter(t=>moodTagSet.tags.has(t)).length;
+  const metPct = metSoFar/c.mustHaves.length;
+  const mood = over ? {emoji:"😟",label:"Worried about the budget"}
+    : metPct>=0.8 ? {emoji:"😄",label:"Delighted so far"}
+    : metPct>=0.4 ? {emoji:"🙂",label:"Cautiously optimistic"}
+    : {emoji:"😐",label:"Still waiting to see the plan"};
+  const hintsOn = DIFFICULTY[difficulty].hintsOn;
+  const hintBanner = state.hintMsg ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">💡 ${state.hintMsg}</div>` : "";
+
+  const tabDefs = [["book","📋 Book"],["setup","🏨 Trip Setup"],["brief","🗂️ Client Brief"],["budget","💰 Budget"]];
+  const subnav = `<div class="subnav">${tabDefs.map(([k,label])=>`<button data-plan-tab="${k}" class="${state.planTab===k?'on':''}">${label}</button>`).join("")}</div>`;
+
+  let tabContent = "";
+  if(state.planTab==="book"){
+    tabContent = `
+    <div class="tabs">
+      ${state.days.map(d=>`<div class="tab ${d.dayNumber===state.currentDay?'active':''}" data-day="${d.dayNumber}">Day ${d.dayNumber}${Object.keys(d.items).length?'<span class="dot"></span>':''}</div>`).join("")}
+    </div>
+    <div class="day-controls">
+      <label>Day type:
+        <select id="dayTypeSelect">
+          <option value="park" ${day.dayType!=='rest'?'selected':''}>Park day</option>
+          <option value="rest" ${day.dayType==='rest'?'selected':''}>Rest day at hotel (no ticket cost)</option>
+        </select>
+      </label>
+      ${day.dayType!=='rest' ? `<label>Park:
+        <select id="parkSelect">
+          ${Object.keys(PARK_NAMES).map(p=>`<option value="${p}" ${p===park?'selected':''}>${PARK_NAMES[p]}</option>`).join("")}
+        </select>
+      </label>
+      <span class="crowd-tag crowd-${day.crowdSeed}">${day.crowdSeed} crowd day</span>
+      ${state.parkHopper ? `<label>Hop to:
+        <select id="secondParkSelect">
+          <option value="">None today</option>
+          ${Object.keys(PARK_NAMES).filter(p=>p!==park).map(p=>`<option value="${p}" ${p===day.secondPark?'selected':''}>${PARK_NAMES[p]}</option>`).join("")}
+        </select>
+      </label>` : ''}` : ''}
+      ${curveballBanner}
+      ${opportunityBanner}
+      ${textBanner}
+      ${llLimitBanner}
+    </div>
+    <div class="planner">
+      <div class="tray">
+        <h3>Available</h3>
+        ${day.secondPark ? `<div class="tray-filter">
+          <button data-tray-park="home" class="${state.trayPark==='home'?'on':''}">${PARK_NAMES[park]}</button>
+          <button data-tray-park="second" class="${state.trayPark==='second'?'on':''}">${PARK_NAMES[day.secondPark]}</button>
+        </div>` : ''}
+        <div class="tray-filter">
+          <button data-filter="all" class="${state.trayFilter==='all'?'on':''}">All</button>
+          <button data-filter="ride" class="${state.trayFilter==='ride'?'on':''}">Rides</button>
+          <button data-filter="show" class="${state.trayFilter==='show'?'on':''}">Shows</button>
+          <button data-filter="dining" class="${state.trayFilter==='dining'?'on':''}">Dining</button>
+          <button data-filter="snack" class="${state.trayFilter==='snack'?'on':''}">Snacks</button>
+          <button data-filter="fireworks" class="${state.trayFilter==='fireworks'?'on':''}">🎆 Fireworks</button>
+          <button data-filter="shop" class="${state.trayFilter==='shop'?'on':''}">🛍️ Shop</button>
+        </div>
+        ${day.secondPark ? `<div class="card ${isSelected('travel','travel')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('travel','travel')}" data-kind="travel" data-id="travel" style="border-left:4px solid var(--rust);">
+          <div class="name">Travel to ${state.trayPark==='home'?PARK_NAMES[day.secondPark]:PARK_NAMES[park]}</div>
+          <div class="meta"><span>~1 hr commute</span><span>Drag or tap, then tap a slot</span></div>
+        </div>` : ''}
+        ${trayItems}${trayShows}${trayFireworks}${trayDining}${traySnack}${trayShop}${trayActivities}
+      </div>
+      <div class="timeline">${rainOverlay}${slots}</div>
+    </div>`;
+  } else if(state.planTab==="setup"){
+    const currentHotel = HOTELS.find(h=>h.id===state.hotelId);
+    const roomFits = currentHotel && ROOM_TYPES[state.roomType] && ROOM_TYPES[state.roomType].capacity>=c.size;
+    tabContent = `
+    <div class="home-panels" style="max-width:none;">
+      <div class="home-panel">
+        <h3>Hotel & Room</h3>
+        <label style="display:block;">
+          <select id="hotelSelect" style="width:100%;margin-top:6px;">
+            ${HOTELS.map(h=>{
+              const fits = smallestFittingRoomType(h, c.size);
+              return `<option value="${h.id}" ${h.id===state.hotelId?'selected':''} ${!fits?'disabled':''}>${h.name} — ${h.tier}${h.earlyEntry?' ⏰':''} (${fmtMoney(priceInRange(h.price,"Medium"))}/night)${!fits?' — too small for this party':''}</option>`;
+            }).join("")}
+          </select>
+        </label>
+        <label style="display:block;margin-top:10px;">
+          <select id="roomTypeSelect" style="width:100%;">
+            ${(currentHotel?currentHotel.roomTypes:["standard"]).map(rt=>{
+              const rd = ROOM_TYPES[rt];
+              const fits = rd.capacity>=c.size;
+              const nightly = currentHotel ? Math.round(priceInRange(currentHotel.price,"Medium")*rd.priceMult) : 0;
+              return `<option value="${rt}" ${state.roomType===rt?'selected':''} ${!fits?'disabled':''}>${rd.label} — sleeps ${rd.capacity} (${fmtMoney(nightly)}/night)${!fits?' — too small':''}</option>`;
+            }).join("")}
+          </select>
+        </label>
+        ${!roomFits ? `<p style="margin-top:8px;font-size:11.5px;color:var(--rust);">⚠️ This room doesn't fit all ${c.size} guests — pick a bigger room type.</p>` : ''}
+        <p style="margin-top:12px;font-size:11.5px;color:#8a8267;">Applies to all ${c.tripLengthDays} nights of the trip. ⏰ Early Entry hotels cut wait times in the first two hours of any park day.</p>
+        <div class="sound-row" style="margin-top:16px;">
+          <label><input type="checkbox" id="hopperToggle" ${state.parkHopper?'checked':''}> Park Hopper</label>
+        </div>
+        <p style="font-size:11.5px;color:#8a8267;">+${fmtMoney(PARK_HOPPER_FEE[0])}–${fmtMoney(PARK_HOPPER_FEE[1])}/person, one time. Once on, you can pick a second park for any day from the Book tab.</p>
+      </div>
+      <div class="home-panel">
+        <h3>Trip at a glance</h3>
+        <p style="font-size:11.5px;color:#8a8267;margin-top:0;"><b>Season:</b> ${SEASONS[state.season].label} — ${SEASONS[state.season].note}${FESTIVALS[state.season] ? ` 🎪 Epcot is hosting the ${FESTIVALS[state.season].name} — check the Snacks tab there.` : ''}</p>
+        ${state.days.map(d=>`
+          <div class="day-overview-row">
+            <span><b>Day ${d.dayNumber}</b></span>
+            <span>${d.dayType==='rest' ? 'Resting at hotel' : PARK_NAMES[d.park] + (d.secondPark ? ' + '+PARK_NAMES[d.secondPark] : '')}</span>
+            <span class="crowd-tag crowd-${d.crowdSeed}">${d.crowdSeed}</span>
+          </div>`).join("")}
+      </div>
+      <div class="home-panel">
+        <h3>Extras</h3>
+        <div class="sound-row">
+          <label><input type="checkbox" id="photoPassToggle" ${state.photoPass?'checked':''}> Memory Maker (PhotoPass)</label>
+          <span>${fmtMoney(PHOTOPASS_PRICE)}</span>
+        </div>
+        <p style="font-size:11.5px;color:#8a8267;">One-time, unlimited photos all trip. A nice touch for photo-loving families.</p>
+        <label style="display:block;margin-top:14px;">Ticketed after-hours event:
+          <select id="eventTicketSelect" style="width:100%;margin-top:6px;">
+            ${Object.keys(EVENTS).map(k=>`<option value="${k}" ${state.eventTicket===k?'selected':''}>${EVENTS[k].label}${EVENTS[k].fee?` (+${fmtMoney(EVENTS[k].fee)}/person)`:''}</option>`).join("")}
+          </select>
+        </label>
+        <p style="font-size:11.5px;color:#8a8267;">Adds exclusive treats to the Snacks tab for the whole trip.</p>
+      </div>
+    </div>`;
+  } else if(state.planTab==="brief"){
+    tabContent = `
+    <div class="brief-panel">
+      <h3>${c.familyName}</h3>
+      <p class="sans" style="font-size:13px;color:#5b5646;">${c.archetype.flavor}</p>
+      ${c.quirk ? `<p class="sans" style="font-size:12.5px;color:var(--rust);background:var(--rust-light);border-radius:8px;padding:8px 12px;">📝 ${c.quirk.text}</p>` : ''}
+      ${c.hotelPreference ? `<p class="sans" style="font-size:12.5px;color:var(--mustard-deep);background:var(--mustard-light);border-radius:8px;padding:8px 12px;margin-top:6px;">🏨 They ${c.hotelPreference.label}.</p>` : ''}
+      <div class="sans" style="font-size:12px;margin-top:14px;">
+        <b style="display:block;text-transform:uppercase;color:var(--teal-dark);margin-bottom:4px;">Must-haves</b>
+        <div class="pill-list">${c.mustHaves.map(t=>`<span class="pill want">${TAG_LABELS[t]||t}</span>`).join("")}</div>
+      </div>
+      <div class="sans" style="font-size:12px;margin-top:12px;">
+        <b style="display:block;text-transform:uppercase;color:var(--rust);margin-bottom:4px;">Dealbreakers</b>
+        <div class="pill-list">${c.dealbreakers.length? c.dealbreakers.map(t=>`<span class="pill avoid">${TAG_LABELS[t]||t}</span>`).join("") : '<span class="pill avoid">None stated</span>'}</div>
+      </div>
+      <div class="client-row" style="margin-top:16px;">
+        <div><b>Party size</b>${c.size} guests</div>
+        <div><b>Trip length</b>${c.tripLengthDays} days</div>
+        <div><b>Budget</b>${fmtMoney(c.budgetTotal)} (${c.budgetTier})</div>
+        <div><b>Lightning Lane style</b>${c.llAttitude.replace(/_/g,' ')}</div>
+      </div>
+    </div>`;
+  } else if(state.planTab==="budget"){
+    const pct = (v)=>Math.min(100, Math.round(v/c.budgetTotal*100));
+    tabContent = `
+    <div class="brief-panel">
+      <h3>Budget breakdown</h3>
+      <div class="bar-row"><div class="label"><span>Hotel</span><span>${fmtMoney(spend.hotel)}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct(spend.hotel)}%"></div></div></div>
+      <div class="bar-row"><div class="label"><span>Tickets</span><span>${fmtMoney(spend.tickets)}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct(spend.tickets)}%"></div></div></div>
+      <div class="bar-row"><div class="label"><span>Dining</span><span>${fmtMoney(spend.dining)}</span></div><div class="bar-track"><div class="bar-fill dining" style="width:${pct(spend.dining)}%"></div></div></div>
+      <div class="bar-row"><div class="label"><span>Springs & merch</span><span>${fmtMoney(spend.merch)}</span></div><div class="bar-track"><div class="bar-fill dining" style="width:${pct(spend.merch)}%"></div></div></div>
+      <div class="bar-row"><div class="label"><span>Extras (PhotoPass, events, excursions)</span><span>${fmtMoney(spend.extras)}</span></div><div class="bar-track"><div class="bar-fill ll" style="width:${pct(spend.extras)}%"></div></div></div>
+      <div class="bar-row"><div class="label"><span>Lightning Lane</span><span>${fmtMoney(spend.ll)}</span></div><div class="bar-track"><div class="bar-fill ll" style="width:${pct(spend.ll)}%"></div></div></div>
+      <div class="bar-total"><span>Total spent</span><span>${fmtMoney(spend.total)} / ${fmtMoney(c.budgetTotal)}</span></div>
+    </div>`;
+  }
+
+  return `
+    <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Est. for agents who plan the impossible</span></div>
+    <div class="topbar">
+      <div class="client-chip"><b>${c.familyName}</b> · ${c.size} guests · ${c.archetype.label} <span title="${mood.label}" style="margin-left:6px;">${mood.emoji}</span></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${state.coop ? `<button class="btn secondary" id="passTurnBtn" style="padding:8px 14px;font-size:12px;">🎮 ${state.coop.turn===1?state.coop.agent1:state.coop.agent2}'s turn — pass</button>` : ""}
+        ${hintsOn ? `<button class="btn secondary" id="hintBtn" style="padding:8px 14px;font-size:12px;">💡 Hint</button>` : ""}
+        <div class="budget-pill ${over?'over':''}" id="openBudget">${fmtMoney(spend.total)} / ${fmtMoney(c.budgetTotal)}</div>
+      </div>
+    </div>
+    ${hintBanner}
+    ${subnav}
+    ${tabContent}
+    <div style="margin-top:18px;display:flex;justify-content:flex-end;">
+      <button class="btn" id="finishTrip">Finish trip &amp; get report card</button>
+    </div>
+    ${state.showItemPicker ? renderItemPicker() : ""}
+    ${state.showFinishConfirm ? renderFinishConfirmModal() : ""}
+  `;
+}
+
+function currentDayPark(){
+  const day = state.days.find(d=>d.dayNumber===state.currentDay);
+  if(!day) return null;
+  return (day.secondPark && state.trayPark==="second") ? day.secondPark : day.park;
+}
+function availableActivities(){
+  const hotelId = state.hotelId;
+  const choices = [];
+  Object.entries(RESORT_ACTIVITIES).forEach(([key, act])=>{
+    const available = act.availableAt==="all" || (Array.isArray(act.availableAt) && act.availableAt.includes(hotelId));
+    if(!available) return;
+    act.options.forEach(opt=>{
+      choices.push({ id:`${key}__${opt.hours}`, activityKey:key, name:act.name, hours:opt.hours, price:opt.price });
+    });
+  });
+  return choices;
+}
+function getPickerList(){
+  if(state.itemPickerType==="activity") return availableActivities();
+  if(state.itemPickerType==="hotelDining"){
+    return [{id:"hotel_qs", name:"Hotel quick service", price:[13,16]}, ...(HOTEL_DINING[state.hotelId]||[])];
+  }
+  const isSnack = state.itemPickerType==="snack";
+  if(!isSnack){
+    const parkCode = currentDayPark();
+    return (SHOPS[parkCode] || SHOPS.MK).items;
+  }
+  const day = state.days.find(d=>d.dayNumber===state.currentDay);
+  const festival = day && day.park==="EPCOT" ? FESTIVALS[state.season] : null;
+  return [...SNACKS, ...(state.eventTicket && state.eventTicket!=="none" ? EVENT_TREATS : []), ...(festival ? festival.booths : [])];
+}
+function renderItemPicker(){
+  const type = state.itemPickerType;
+  const list = getPickerList();
+  const day = state.days.find(d=>d.dayNumber===state.currentDay);
+  const festival = type==="snack" && day && day.park==="EPCOT" ? FESTIVALS[state.season] : null;
+  const shopName = type==="shop" ? (SHOPS[currentDayPark()] || SHOPS.MK).name : null;
+  const title = type==="snack" ? "What are they craving?"
+    : type==="shop" ? `Welcome to ${shopName}`
+    : type==="activity" ? "How long, and doing what?"
+    : "Where should they eat at the resort?";
+  return `
+    <div class="overlay" id="itemPickerOverlay">
+      <div class="drawer" style="width:380px;">
+        <h3 style="font-family:var(--serif);font-size:19px;text-transform:none;letter-spacing:0;">${title}</h3>
+        ${type==="snack" && festival ? `<p class="sans" style="font-size:11.5px;color:var(--teal-dark);margin-top:2px;">🎪 ${festival.name} booths available today</p>` : ""}
+        <div class="sans" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+          ${list.map(s=>`
+            <button class="btn secondary" data-item-choice="${s.id}" style="justify-content:space-between;display:flex;text-align:left;">
+              <span>${s.name}${s.exclusive?' ⭐':''}${type==='activity'?` — ${s.hours} hr`:''}</span><span>${(!s.price||s.price[1]===0)?'Free':fmtMoney(priceInRange(s.price,"Medium"))}</span>
+            </button>`).join("")}
+        </div>
+        <div style="margin-top:16px;text-align:right;"><button class="btn secondary" id="cancelItemPicker" style="font-size:12px;">Cancel</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFinishConfirmModal(){
+  const days = state.client.tripLengthDays;
+  const count = state.pendingFinishBookingCount ?? 0;
+  return `
+    <div class="overlay" id="finishConfirmOverlay">
+      <div class="drawer" style="width:400px;">
+        <h3 style="font-family:var(--serif);font-size:19px;text-transform:none;letter-spacing:0;">Finish this trip?</h3>
+        <p class="sans" style="font-size:13px;color:#443f33;line-height:1.6;">Only ${count} thing${count===1?'':'s'} booked for a ${days}-day trip — some days still look pretty empty. Finish anyway, or go back and add more?</p>
+        <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px;">
+          <button class="btn secondary" id="cancelFinishBtn">Keep planning</button>
+          <button class="btn" id="confirmFinishBtn">Finish anyway</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildFamilyLetter(r){
+  const c = state.client;
+  const overBudget = r.spend.total > c.budgetTotal;
+  const openers = {
+    great: [`Dear agent,`, `To our wonderful travel agent,`],
+    good: [`Dear agent,`, `Hello again,`],
+    mixed: [`Dear agent,`, `Hi there,`],
+    rough: [`To whom it may concern,`, `Dear agent,`],
+  };
+  let tier = r.final>=90 ? "great" : r.final>=75 ? "good" : r.final>=60 ? "mixed" : "rough";
+  let body;
+  if(tier==="great"){
+    body = `We just got home and we're still talking about it. Every single thing on our list got booked, and honestly it felt like you read our minds. ${c.size>3?'The whole crew':'We'} can't wait to book with you again.`;
+  } else if(tier==="good"){
+    body = `We had a wonderful time! Most of what mattered to us made it into the trip, and things mostly ran smoothly. A few small things could've gone better${overBudget?', and the final bill ran a bit higher than we hoped':''}, but overall we're happy we booked with you.`;
+  } else if(tier==="mixed"){
+    body = `The trip had its ups and downs. We appreciated the effort, but ${overBudget?'we were surprised by how much we ended up spending, and ':''}a few things we really cared about got missed along the way. We'll think it over before booking with you again.`;
+  } else {
+    body = `We have to be honest — this trip didn't go the way we'd hoped. ${overBudget?"We spent well beyond what we agreed on, and ":""}too many things we asked for just weren't there. We won't be requesting you as our agent next time.`;
+  }
+  const signoff = tier==="great"||tier==="good" ? `Warmly,\n${c.familyName}` : `Sincerely,\n${c.familyName}`;
+  const bm = r.bigMoment;
+  const momentLine = bm.met
+    ? pick([
+        `Honestly, the moment that made this whole trip for us was getting "${bm.label.toLowerCase()}" — that was the one thing we really wanted, and you made it happen.`,
+        `If there's one thing we'll remember, it's that you made sure we got "${bm.label.toLowerCase()}." That meant more to us than you probably realize.`,
+      ])
+    : pick([
+        `If we're being honest, the one thing we were really hoping for was "${bm.label.toLowerCase()}," and it just didn't happen this time. That one stung a little.`,
+        `We were most looking forward to "${bm.label.toLowerCase()}," so it was disappointing that it never made it into the plan.`,
+      ]);
+  return `${pick(openers[tier])}\n\n${body}\n\n${momentLine}\n\n${signoff}`;
+}
+
+let lastReportPassed = true;
+function logTrip(r){
+  const c = state.client;
+  tripLog.push({
+    familyName:c.familyName, archetype:c.archetype.label, size:c.size,
+    tripLengthDays:c.tripLengthDays, grade:r.grade, score:r.final,
+    budgetTotal:c.budgetTotal, spent:r.spend.total, loggedAt:new Date(),
+  });
+  tripLog.sort((a,b)=>b.score-a.score);
+
+  // Remember this family for possible future repeat bookings
+  const existing = pastClients.find(p=>p.familyName===c.familyName);
+  if(existing){ existing.lastGrade = r.grade; existing.quirk = c.quirk; }
+  else { pastClients.push({ familyName:c.familyName, quirk:c.quirk, lastGrade:r.grade }); if(pastClients.length>20) pastClients.shift(); }
+
+  // Grade streak, for the streak achievement
+  if(r.final>=90) career.streak++; else career.streak=0;
+
+  // Track every A-tier ride ever successfully used with Lightning Lane, for the collection achievement
+  state.days.forEach(d=>Object.values(d.items).forEach(it=>{
+    if(it.kind==="ride" && it.tier==="A") career.aTierEverBooked.add(it.id);
+  }));
+
+  const levelBefore = career.level;
+  career.tripsCompleted++;
+  awardXp(Math.round(r.final) + (c.archetype && c.archetype.rare ? 40 : 0));
+  state.leveledUp = career.level > levelBefore;
+  checkAchievements(r, c);
+  state.newlyUnlocked = newlyUnlocked;
+  saveGame();
+}
+let lastReportData = null;
+function generateShareCard(){
+  const canvas = document.getElementById("shareCanvas");
+  if(!canvas || !lastReportData || !state) return;
+  const ctx = canvas.getContext("2d");
+  const r = lastReportData, c = state.client;
+  const W = canvas.width, H = canvas.height;
+
+  // Background
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,"#FDF9EF"); grad.addColorStop(1,"#F0E6D2");
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = "#1B6169"; ctx.lineWidth = 6; ctx.strokeRect(3,3,W-6,H-6);
+
+  // Header
+  ctx.fillStyle = "#123F45"; ctx.font = "bold 22px Georgia";
+  ctx.fillText("SUNSHINE & CO. VACATION BUREAU", 40, 55);
+  ctx.strokeStyle = "#20302B"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(40,68); ctx.lineTo(W-40,68); ctx.stroke();
+
+  // Grade
+  ctx.fillStyle = "#1B6169"; ctx.font = "bold 90px Georgia";
+  ctx.fillText(r.grade, 40, 190);
+  ctx.fillStyle = "#6b6555"; ctx.font = "16px Georgia";
+  ctx.fillText(`${r.final} / 100`, 40, 220);
+
+  // Client info
+  ctx.fillStyle = "#20302B"; ctx.font = "bold 20px Georgia";
+  ctx.fillText(c.familyName, 250, 130);
+  ctx.font = "13px Georgia"; ctx.fillStyle = "#443f33";
+  ctx.fillText(`${c.archetype.label} · ${c.size} guests · ${c.tripLengthDays}-day trip`, 250, 154);
+  ctx.fillText(`Budget: ${fmtMoney(c.budgetTotal)}   Spent: ${fmtMoney(r.spend.total)}`, 250, 176);
+  ctx.fillText(`Agent rank: ${careerTitle()} (Level ${career.level+1})`, 250, 198);
+
+  // Category bars
+  const cats = [["Budget",r.budgetScore],["Value",r.valueScore],["Preferences",r.prefScore],["Efficiency",r.effScore]];
+  let by = 250;
+  cats.forEach(([label,score])=>{
+    ctx.fillStyle = "#20302B"; ctx.font = "12px Georgia";
+    ctx.fillText(`${label}: ${score}`, 40, by);
+    ctx.fillStyle = "#e8ddc0"; ctx.fillRect(140, by-11, 200, 10);
+    ctx.fillStyle = "#1B6169"; ctx.fillRect(140, by-11, 200*(score/100), 10);
+    by += 24;
+  });
+
+  ctx.fillStyle = "#8a8267"; ctx.font = "italic 12px Georgia";
+  ctx.fillText("A Disney World Travel Agent Simulator — fan-made, non-commercial", 40, H-24);
+
+  const link = document.createElement("a");
+  link.download = `${c.familyName.replace(/\s+/g,"_")}_trip_score.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+function renderReportScreen(){
+  const r = buildReportCard();
+  lastReportData = r;
+  lastReportPassed = r.final>=75;
+  if(!state.reportLogged){ state.reportLogged = true; logTrip(r); }
+  const catBar = (label, score)=> `
+    <div class="cat-row"><div class="label"><span>${label}</span><span>${score}/100</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div></div>`;
+  const letter = buildFamilyLetter(r);
+  const levelBanner = state.leveledUp
+    ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">Level up! You're now a ${careerTitle()}.</div>` : "";
+  const achBanner = (state.newlyUnlocked||[]).length
+    ? `<div class="curveball-banner" style="background:var(--mustard-light);border-color:var(--mustard);color:#7a5314;">${state.newlyUnlocked.map(a=> a.hidden ? `🌟 Mystery achievement unlocked: ${a.label} (+${a.bonusXp} XP)` : `🏆 Achievement unlocked: ${a.label}`).join("<br>")}</div>` : "";
+  return `
+    <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Agent performance review</span></div>
+    <div class="report">
+      <div class="grade-box"><div class="grade">${r.grade}</div><div class="score">${r.final} / 100 · ${state.client.familyName}</div>${state.coop?`<div class="score" style="margin-top:2px;">🎮 Booked together by ${state.coop.agent1} &amp; ${state.coop.agent2}</div>`:''}</div>
+      ${levelBanner}${achBanner}
+      ${catBar("Budget adherence (40%)", r.budgetScore)}
+      ${catBar("Trip value (30%)", r.valueScore)}
+      ${catBar("Preference match (20%)", r.prefScore)}
+      ${catBar("Efficiency (10%)", r.effScore)}
+      <ul class="feedback-list">${r.feedback.map(f=>`<li>${f}</li>`).join("")}</ul>
+      <div class="family-letter">${letter.split("\n").map(line=>line?`<p>${line}</p>`:'').join("")}</div>
+      <div class="sans" style="font-size:11.5px;color:#6b6555;margin-top:10px;">Saved to your trip log — check it from the home screen.</div>
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;"><button class="btn" id="newClientBtn">Take next client</button><button class="btn secondary" id="viewLogBtn">View trip log</button><button class="btn secondary" id="shareCardBtn">📤 Share card</button></div>
+      <canvas id="shareCanvas" width="640" height="400" style="display:none;"></canvas>
+    </div>
+  `;
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+function wireEvents(){
+  const goHome = document.getElementById("goHome");
+  if(goHome) goHome.onclick = (e)=>{ e.preventDefault(); state=null; render(); };
+  const viewLogBtn = document.getElementById("viewLogBtn");
+  if(viewLogBtn) viewLogBtn.onclick = ()=>{ state=null; render(); };
+  const shareCardBtn = document.getElementById("shareCardBtn");
+  if(shareCardBtn) shareCardBtn.onclick = generateShareCard;
+  const hintBtn = document.getElementById("hintBtn");
+  const passTurnBtn = document.getElementById("passTurnBtn");
+  if(passTurnBtn) passTurnBtn.onclick = ()=>{ state.coop.turn = state.coop.turn===1?2:1; render(); };
+  if(hintBtn) hintBtn.onclick = ()=>{
+    const { tags } = bookedTagSet();
+    const c = state.client;
+    const unmet = c.mustHaves.filter(t=>!tags.has(t));
+    state.hintMsg = unmet.length
+      ? `Try working in: ${TAG_LABELS[unmet[0]]||unmet[0]}.`
+      : "All their must-haves are already booked — check the budget next.";
+    render();
+  };
+  document.querySelectorAll("[data-difficulty]").forEach(b=>{
+    b.onclick = ()=>{ difficulty = b.dataset.difficulty; saveGame(); render(); };
+  });
+  const howToPlayBtn = document.getElementById("howToPlayBtn");
+  if(howToPlayBtn) howToPlayBtn.onclick = ()=>{ showOnboarding = true; render(); };
+  const resetSaveBtn = document.getElementById("resetSaveBtn");
+  if(resetSaveBtn) resetSaveBtn.onclick = ()=>{ showResetConfirm = true; render(); };
+  const confirmResetBtn = document.getElementById("confirmResetBtn");
+  if(confirmResetBtn) confirmResetBtn.onclick = ()=>{ resetSaveData(); showResetConfirm=false; render(); };
+  const cancelResetBtn = document.getElementById("cancelResetBtn");
+  if(cancelResetBtn) cancelResetBtn.onclick = ()=>{ showResetConfirm=false; render(); };
+  const prestigeBtn = document.getElementById("prestigeBtn");
+  if(prestigeBtn) prestigeBtn.onclick = ()=>{ prestigeUp(); render(); };
+  document.querySelectorAll("[data-theme-choice]").forEach(b=>{
+    b.onclick = ()=>{ applyTheme(b.dataset.themeChoice); saveGame(); render(); };
+  });
+  const closeOnboarding = document.getElementById("closeOnboarding");
+  if(closeOnboarding) closeOnboarding.onclick = ()=>{ showOnboarding = false; render(); };
+  document.querySelectorAll("[data-item-choice]").forEach(b=>{
+    b.onclick = ()=>{
+      const list = getPickerList();
+      const item = list.find(s=>s.id===b.dataset.itemChoice);
+      if(state.itemPickerType==="activity"){
+        dropItem(state.currentDay, state.pendingItemSlot, {kind:"activity", id:item.activityKey, name:item.name, price:item.price, hours:item.hours});
+      } else {
+        dropItem(state.currentDay, state.pendingItemSlot, {kind:"dining", restaurant:item});
+      }
+      state.showItemPicker = false;
+      state.pendingItemSlot = null;
+      render();
+    };
+  });
+  const cancelItemPicker = document.getElementById("cancelItemPicker");
+  if(cancelItemPicker) cancelItemPicker.onclick = ()=>{ state.showItemPicker=false; state.pendingItemSlot=null; render(); };
+  const startBooking = document.getElementById("startBooking");
+  if(startBooking) startBooking.onclick = ()=>{ ensureAudioCtx(); showOnboarding = false; newGame(); };
+  const sfxToggle = document.getElementById("sfxToggle");
+  if(sfxToggle) sfxToggle.onchange = (e)=>{ sound.sfxOn = e.target.checked; if(sound.sfxOn) sfxDrop(); saveGame(); };
+  const musicToggle = document.getElementById("musicToggle");
+  if(musicToggle) musicToggle.onchange = (e)=>{ ensureAudioCtx(); e.target.checked ? startMusicLoop() : stopMusicLoop(); saveGame(); };
+  const volumeSlider = document.getElementById("volumeSlider");
+  if(volumeSlider) volumeSlider.oninput = (e)=>{ sound.volume = parseFloat(e.target.value); if(sound.musicEl) sound.musicEl.volume = sound.volume*0.5; };
+  if(volumeSlider) volumeSlider.onchange = saveGame;
+
+  const startPlan = document.getElementById("startPlan");
+  if(startPlan) startPlan.onclick = ()=>{
+    if(pendingCoop.enabled){
+      state.coop = { agent1: pendingCoop.agent1.trim()||"Agent 1", agent2: pendingCoop.agent2.trim()||"Agent 2", turn:1 };
+    }
+    state.view="plan"; render();
+  };
+  const reroll = document.getElementById("rerollClient");
+  if(reroll) reroll.onclick = ()=>newGame();
+  const newClientBtn = document.getElementById("newClientBtn");
+  if(newClientBtn) newClientBtn.onclick = ()=>newGame();
+  const coopToggle = document.getElementById("coopToggle");
+  if(coopToggle) coopToggle.onchange = (e)=>{ pendingCoop.enabled = e.target.checked; render(); };
+  const coopName1 = document.getElementById("coopName1");
+  if(coopName1) coopName1.oninput = (e)=>{ pendingCoop.agent1 = e.target.value; };
+  const coopName2 = document.getElementById("coopName2");
+  if(coopName2) coopName2.oninput = (e)=>{ pendingCoop.agent2 = e.target.value; };
+
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.onclick = ()=>{ state.currentDay = parseInt(t.dataset.day); state.trayPark="home"; render(); };
+  });
+  const parkSelect = document.getElementById("parkSelect");
+  if(parkSelect) parkSelect.onchange = (e)=>{
+    const day = state.days.find(d=>d.dayNumber===state.currentDay);
+    day.park = e.target.value; day.items = {}; day.secondPark = null; state.trayPark = "home"; render();
+  };
+  const hotelSelect = document.getElementById("hotelSelect");
+  if(hotelSelect) hotelSelect.onchange = (e)=>{
+    state.hotelId = e.target.value;
+    const newHotel = HOTELS.find(h=>h.id===state.hotelId);
+    state.roomType = smallestFittingRoomType(newHotel, state.client.size) || newHotel.roomTypes[0];
+    render();
+  };
+  const roomTypeSelect = document.getElementById("roomTypeSelect");
+  if(roomTypeSelect) roomTypeSelect.onchange = (e)=>{ state.roomType = e.target.value; render(); };
+  const dayTypeSelect = document.getElementById("dayTypeSelect");
+  if(dayTypeSelect) dayTypeSelect.onchange = (e)=>{
+    const day = state.days.find(d=>d.dayNumber===state.currentDay);
+    day.dayType = e.target.value; day.items = {}; render();
+  };
+  const hopperToggle = document.getElementById("hopperToggle");
+  if(hopperToggle) hopperToggle.onchange = (e)=>{
+    state.parkHopper = e.target.checked;
+    if(!state.parkHopper){ state.days.forEach(d=>d.secondPark=null); state.trayPark="home"; }
+    render();
+  };
+  const secondParkSelect = document.getElementById("secondParkSelect");
+  if(secondParkSelect) secondParkSelect.onchange = (e)=>{
+    const day = state.days.find(d=>d.dayNumber===state.currentDay);
+    day.secondPark = e.target.value || null; state.trayPark = "home"; render();
+  };
+  const photoPassToggle = document.getElementById("photoPassToggle");
+  if(photoPassToggle) photoPassToggle.onchange = (e)=>{ state.photoPass = e.target.checked; render(); };
+  const eventTicketSelect = document.getElementById("eventTicketSelect");
+  if(eventTicketSelect) eventTicketSelect.onchange = (e)=>{ state.eventTicket = e.target.value; render(); };
+  const acceptTextBtn = document.getElementById("acceptTextBtn");
+  if(acceptTextBtn) acceptTextBtn.onclick = ()=>{
+    const day = state.days.find(d=>d.dayNumber===state.textDay);
+    day.dayType = "rest"; day.items = {};
+    state.textResolved = true;
+    render();
+  };
+  const declineTextBtn = document.getElementById("declineTextBtn");
+  if(declineTextBtn) declineTextBtn.onclick = ()=>{ state.textResolved = true; render(); };
+  document.querySelectorAll("[data-tray-park]").forEach(b=>{
+    b.onclick = ()=>{ state.trayPark = b.dataset.trayPark; render(); };
+  });
+
+  document.querySelectorAll("[data-filter]").forEach(b=>{
+    b.onclick = ()=>{ state.trayFilter = b.dataset.filter; render(); };
+  });
+
+  const openBudget = document.getElementById("openBudget");
+  if(openBudget) openBudget.onclick = ()=>{ state.planTab = "budget"; render(); };
+  document.querySelectorAll("[data-plan-tab]").forEach(b=>{
+    b.onclick = ()=>{ state.planTab = b.dataset.planTab; render(); };
+  });
+
+  const finishTrip = document.getElementById("finishTrip");
+  if(finishTrip) finishTrip.onclick = ()=>{
+    const totalBookings = state.days.reduce((sum,d)=> sum + Object.values(d.items).filter(it=>it.kind==="ride"||it.kind==="dining").length, 0);
+    const expectedMin = state.client.tripLengthDays * 2; // rough "barely planned" threshold
+    if(totalBookings >= expectedMin){
+      state.view="report"; state.reportSoundPlayed=false; render();
+    } else {
+      state.pendingFinishBookingCount = totalBookings;
+      state.showFinishConfirm = true;
+      render();
+    }
+  };
+  const confirmFinishBtn = document.getElementById("confirmFinishBtn");
+  if(confirmFinishBtn) confirmFinishBtn.onclick = ()=>{
+    state.showFinishConfirm = false;
+    state.view="report"; state.reportSoundPlayed=false; render();
+  };
+  const cancelFinishBtn = document.getElementById("cancelFinishBtn");
+  if(cancelFinishBtn) cancelFinishBtn.onclick = ()=>{ state.showFinishConfirm = false; render(); };
+
+  document.querySelectorAll("[data-remove]").forEach(b=>{
+    b.onclick = ()=> removeItem(state.currentDay, b.dataset.remove);
+  });
+  document.querySelectorAll("[data-ll-toggle]").forEach(a=>{
+    a.onclick = (e)=>{ e.preventDefault(); toggleLL(state.currentDay, a.dataset.llToggle); };
+  });
+
+  function placeAtSlot(slotHour, data){
+    if(data.kind==="snack" || data.kind==="shop" || data.kind==="activity" || data.kind==="hotelDining"){
+      state.pendingItemSlot = slotHour;
+      state.itemPickerType = data.kind;
+      state.showItemPicker = true;
+      render();
+      return;
+    }
+    if(data.kind==="travel"){
+      dropItem(state.currentDay, slotHour, {kind:"travel", label:data.label});
+    } else if(data.kind==="ride"){
+      const ride = Object.values(RIDES).flat().find(r=>r.id===data.id);
+      dropItem(state.currentDay, slotHour, {kind:"ride", ride});
+    } else {
+      const rest = data.id==="hotel_qs" ? {id:"hotel_qs", name:"Hotel quick service", price:[13,16]} : Object.values(RESTAURANTS).flat().find(r=>r.id===data.id);
+      dropItem(state.currentDay, slotHour, {kind:"dining", restaurant:rest});
+    }
+  }
+
+  document.querySelectorAll(".card").forEach(card=>{
+    card.ondragstart = (e)=>{
+      const label = card.querySelector(".name") ? card.querySelector(".name").textContent : "";
+      e.dataTransfer.setData("text/plain", JSON.stringify({kind:card.dataset.kind, id:card.dataset.id, label}));
+
+      // Custom drag ghost so it matches the app's look instead of a default browser snapshot
+      const ghost = document.createElement("div");
+      ghost.textContent = label;
+      ghost.style.cssText = `
+        position:fixed; top:-999px; left:-999px; z-index:9999;
+        font-family:'Work Sans',sans-serif; font-weight:700; font-size:12.5px;
+        background:linear-gradient(155deg,#1F7A80,#0B3438); color:#FFFBF2;
+        padding:10px 16px; border-radius:10px; box-shadow:0 10px 28px rgba(11,52,56,.4);
+        white-space:nowrap; pointer-events:none;
+      `;
+      document.body.appendChild(ghost);
+      e.dataTransfer.setDragImage(ghost, 20, 20);
+      setTimeout(()=> ghost.remove(), 0);
+    };
+    // Tap-to-select fallback — works on touch devices and via keyboard, alongside drag-and-drop
+    const selectHandler = ()=>{
+      const label = card.querySelector(".name") ? card.querySelector(".name").textContent.trim() : "";
+      const kind = card.dataset.kind, id = card.dataset.id;
+      if(state.selectedCard && state.selectedCard.kind===kind && state.selectedCard.id===id){
+        state.selectedCard = null; // tap again to deselect
+      } else {
+        state.selectedCard = { kind, id, label };
+      }
+      render();
+    };
+    card.onclick = selectHandler;
+    card.onkeydown = (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); selectHandler(); } };
+  });
+  document.querySelectorAll(".slot-drop").forEach(slot=>{
+    if(!slot.dataset.slot) return; // spanned continuation slot, not a drop target
+    slot.ondragover = (e)=>{ e.preventDefault(); slot.classList.add("dragover"); };
+    slot.ondragleave = ()=> slot.classList.remove("dragover");
+    slot.ondrop = (e)=>{
+      e.preventDefault(); slot.classList.remove("dragover");
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      placeAtSlot(slot.dataset.slot, data);
+    };
+    // Tap-to-place: if a card is selected, tapping/pressing Enter on a slot books it there
+    const placeHandler = ()=>{
+      if(!state.selectedCard) return;
+      const data = state.selectedCard;
+      state.selectedCard = null;
+      placeAtSlot(slot.dataset.slot, data);
+    };
+    slot.onclick = placeHandler;
+    slot.onkeydown = (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); placeHandler(); } };
+  });
+}
+
+window.addEventListener("beforeunload", (e)=>{
+  if(state && state.view==="plan"){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+loadGame();
+render();
+</script>
+</body>
+</html>
