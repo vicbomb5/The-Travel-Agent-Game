@@ -195,6 +195,9 @@
     border-left:2px solid var(--line); transition:border-color .2s var(--ease-smooth);
   }
   .slot-drop.dragover{ background:var(--teal-light); border-left-color:var(--teal-glow); border-left-width:3px; box-shadow:inset 3px 0 0 0 var(--teal-glow); }
+  .slot-drop.reserved-slot{ background:rgba(226,78,46,.08); border-left-color:var(--rust); border-left-width:3px; cursor:not-allowed; }
+  .card.closed{ opacity:.5; cursor:not-allowed; filter:grayscale(.6); }
+  .card.closed:hover{ transform:none; box-shadow:var(--shadow); }
   .stub{
     font-family:var(--sans); width:100%; display:flex; justify-content:space-between; align-items:center;
     background:linear-gradient(155deg,var(--mustard-light),#F1DB9E); border:1px solid var(--mustard); border-radius:11px; padding:11px 16px; font-size:12.5px;
@@ -287,6 +290,56 @@
 <body>
 <div class="app" id="app"></div>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD0tEyaJiTBXMUXwnKpDcdpPiJ7k3d26Js",
+    authDomain: "the-travel-agent-game.firebaseapp.com",
+    projectId: "the-travel-agent-game",
+    storageBucket: "the-travel-agent-game.firebasestorage.app",
+    messagingSenderId: "753258315690",
+    appId: "1:753258315690:web:49655ae4b9a359460275d3",
+    measurementId: "G-C4GNVFPBN1"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Bridged onto window so the main (non-module) game script can call these directly.
+  window.firebaseSubmitScore = async function(entry){
+    try {
+      await addDoc(collection(db, "leaderboard"), {
+        playerName: String(entry.playerName||"Anonymous Agent").slice(0,30),
+        familyName: String(entry.familyName||"").slice(0,60),
+        archetype: String(entry.archetype||"").slice(0,60),
+        grade: String(entry.grade||"").slice(0,3),
+        score: Math.max(0, Math.min(100, Math.round(entry.score))),
+        tripLengthDays: Math.max(1, Math.min(14, Math.round(entry.tripLengthDays||1))),
+        submittedAt: serverTimestamp(),
+      });
+      return { ok:true };
+    } catch(e){
+      console.error("Firebase submit error:", e);
+      return { ok:false, error: e.message };
+    }
+  };
+
+  window.firebaseGetLeaderboard = async function(topN){
+    try {
+      const q = query(collection(db, "leaderboard"), orderBy("score","desc"), limit(topN||25));
+      const snap = await getDocs(q);
+      const rows = [];
+      snap.forEach(doc=> rows.push(doc.data()));
+      return { ok:true, rows };
+    } catch(e){
+      console.error("Firebase fetch error:", e);
+      return { ok:false, error: e.message, rows: [] };
+    }
+  };
+</script>
+
 <script>
 /* ============================================================
    SUNSHINE & CO. VACATION BUREAU — TABLE OF CONTENTS
@@ -374,6 +427,23 @@ const RIDES = {
     {id:"ak_feathered",name:"Feathered Friends in Flight",thrill:"mild",type:"show",height:null,baseWait:15,ll:"none"},
     {id:"ak_character_landing",name:"Character Landing (Meet Russell & Dug)",thrill:"mild",type:"meetgreet",height:null,baseWait:15,ll:"none"},
   ],
+  TL:[
+    {id:"tl_humunga",name:"Humunga Kowabunga",thrill:"intense",type:"water",height:60,baseWait:20,ll:"none"},
+    {id:"tl_crush_gusher",name:"Crush 'n' Gusher",thrill:"intense",type:"water",height:48,baseWait:30,ll:"none"},
+    {id:"tl_miss_adventure",name:"Miss Adventure Falls",thrill:"moderate",type:"water",height:null,baseWait:25,ll:"none"},
+    {id:"tl_castaway_creek",name:"Castaway Creek",thrill:"mild",type:"water",height:null,baseWait:10,ll:"none"},
+    {id:"tl_bay_slides",name:"Bay Slides",thrill:"mild",type:"water",height:null,baseWait:10,ll:"none"},
+    {id:"tl_ketchakiddee",name:"Ketchakiddee Creek",thrill:"mild",type:"water",height:null,baseWait:10,ll:"none"},
+  ],
+  BB:[
+    {id:"bb_summit_plummet",name:"Summit Plummet",thrill:"intense",type:"water",height:48,baseWait:35,ll:"none"},
+    {id:"bb_slush_gusher",name:"Slush Gusher",thrill:"intense",type:"water",height:48,baseWait:25,ll:"none"},
+    {id:"bb_teamboat_springs",name:"Teamboat Springs",thrill:"moderate",type:"water",height:null,baseWait:25,ll:"none"},
+    {id:"bb_snow_stormers",name:"Snow Stormers",thrill:"moderate",type:"water",height:null,baseWait:15,ll:"none"},
+    {id:"bb_toboggan_racers",name:"Toboggan Racers",thrill:"moderate",type:"water",height:null,baseWait:15,ll:"none"},
+    {id:"bb_cross_country_creek",name:"Cross Country Creek",thrill:"mild",type:"water",height:null,baseWait:10,ll:"none"},
+    {id:"bb_tikes_peak",name:"Tike's Peak",thrill:"mild",type:"water",height:null,baseWait:10,ll:"none"},
+  ],
 };
 
 const RESTAURANTS = {
@@ -416,6 +486,18 @@ const RESTAURANTS = {
     {id:"ds_boathouse",name:"The Boathouse",type:"TS",price:[40,60]},
     {id:"ds_rainforest",name:"Rainforest Cafe",type:"TS",price:[30,45]},
     {id:"ds_homecomin",name:"Homecomin' Kitchen",type:"TS",price:[32,48]},
+    {id:"ds_polite_pig",name:"The Polite Pig",type:"TS",price:[28,42]},
+    {id:"ds_paddlefish",name:"Paddlefish",type:"TS",price:[38,58]},
+    {id:"ds_dluxe_burger",name:"D-Luxe Burger",type:"QS",price:[13,18]},
+    {id:"ds_blaze_pizza",name:"Blaze Fast-Fire'd Pizza",type:"QS",price:[12,17]},
+  ],
+  TL:[
+    {id:"tl_leaning_palms",name:"Leaning Palms",type:"QS",price:[13,17]},
+    {id:"tl_typhoon_tilly",name:"Typhoon Tilly's",type:"QS",price:[11,15]},
+  ],
+  BB:[
+    {id:"bb_lottawatta",name:"Lottawatta Lodge",type:"QS",price:[13,17]},
+    {id:"bb_avalunch",name:"Avalunch",type:"QS",price:[11,15]},
   ],
 };
 
@@ -470,6 +552,18 @@ const SHOPS = {
     {id:"souv_plush",name:"Plush or toy",price:[25,40]},
     {id:"souv_splurge",name:"Splurge item (jewelry, art)",price:[60,110]},
     {id:"shop_ds_jersey",name:"Disney Springs Spirit Jersey",price:[70,85],exclusive:true},
+    {id:"shop_ds_loungefly",name:"Disney Springs Loungefly Bag",price:[75,90],exclusive:true},
+    {id:"shop_ds_tee",name:"Disney Springs Graphic Tee",price:[30,38],exclusive:true},
+  ]},
+  TL:{ name:"Singapore Sal's", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"shop_tl_towel",name:"Typhoon Lagoon Beach Towel",price:[28,36],exclusive:true},
+  ]},
+  BB:{ name:"Beach Haus", items:[
+    {id:"souv_keepsake",name:"Small keepsake (pin, magnet)",price:[12,18]},
+    {id:"souv_plush",name:"Plush or toy",price:[25,40]},
+    {id:"shop_bb_towel",name:"Blizzard Beach Beach Towel",price:[28,36],exclusive:true},
   ]},
 };
 
@@ -566,9 +660,10 @@ function smallestFittingRoomType(hotel, size){
 }
 
 const MULTIPASS_PRICE = { MK:[29,45], HS:[24,32], EPCOT:[19,25], AK:[16,20] };
-const TICKET_PRICE = { MK:[130,210], HS:[125,195], EPCOT:[125,195], AK:[119,180] };
+const TICKET_PRICE = { MK:[130,210], HS:[125,195], EPCOT:[125,195], AK:[119,180], TL:[75,95], BB:[75,95] };
 const PARK_HOPPER_FEE = [80,100];
-const PARK_NAMES = { MK:"Magic Kingdom", EPCOT:"EPCOT", HS:"Hollywood Studios", AK:"Animal Kingdom", DS:"Disney Springs" };
+const PARK_NAMES = { MK:"Magic Kingdom", EPCOT:"EPCOT", HS:"Hollywood Studios", AK:"Animal Kingdom", DS:"Disney Springs", TL:"Typhoon Lagoon", BB:"Blizzard Beach" };
+const WATER_PARKS = ["TL","BB"]; // no Lightning Lane system, no Park Hopper eligibility, no Early Entry
 const DS_MERCH_FEE = 100; // flat per person for a Disney Springs day (shopping/merch)
 const MAX_LL_PER_DAY = 3; // cap on how many rides can use Lightning Lane in a single day
 const MAX_A_TIER_PER_DAY = 1; // only 1 A-tier Multi Pass ride per day; rest must be B-tier
@@ -624,6 +719,12 @@ const RARE_ARCHETYPES = {
   proposal:{ label:"Secret proposal trip", sizeRange:[2,2], tripRange:[3,4],
     mustHaves:["signature_ts","fandom_ride"], dealbreakers:[],
     llAttitude:"wants_top_2_only", flavor:"He's proposing on this trip and needs everything to go right.", rare:true },
+  influencer:{ label:"Content-creator family", sizeRange:[1,3], tripRange:[3,5],
+    mustHaves:["photo_op","meet_greet","park_exclusive_item"], dealbreakers:["no_qs_only_days"],
+    llAttitude:"wants_top_2_only", flavor:"Everything is about getting the shot — great backdrops, character moments, and a filled-out grid by the end of the trip.", rare:true },
+  passholder:{ label:"Diehard Annual Passholder", sizeRange:[1,3], tripRange:[2,3],
+    mustHaves:["max_rides","ride_moderate"], dealbreakers:["no_long_queues"],
+    llAttitude:"budget_conscious", flavor:"Been to the parks more times than they can count and refuses to waste a visit standing in a long line for something they've already done a dozen times.", rare:true },
 };
 
 const QUIRKS = [
@@ -652,6 +753,7 @@ const TAG_LABELS = {
   no_ill_spend:"No Individual Lightning Lane spend", no_character_dining:"No character dining",
   park_exclusive_item:"Wants a park-exclusive souvenir (Spirit Jersey, Loungefly, etc.)",
   meet_greet:"Wants a character meet-and-greet",
+  photo_op:"Wants PhotoPass for photo ops",
 };
 
 /* ============================================================
@@ -665,6 +767,21 @@ const FIREWORKS_TIME = "8 PM"; // the last slot of the day — closest stand-in 
 // the "Surprise extended evening hours" curveball.
 function dayHasExtendedHours(day){
   return state && state.curveballDay===day.dayNumber && state.curveballLabel==="Surprise extended evening hours";
+}
+function isRideClosedToday(day, ride){
+  if(!state || state.curveballDay!==day.dayNumber || !ride) return false;
+  if(state.curveballLabel==="A planned ride breaks down") return ride.id===state.brokenRideId;
+  if(state.curveballLabel==="Afternoon rain moves in") return ride.type==="water";
+  return false;
+}
+// Lightning Lane's booking system is fully down for the day — no Multi Pass or ILL purchases at all.
+function isLLDownToday(day){
+  return !!(state && state.curveballDay===day.dayNumber && state.curveballLabel==="Lightning Lane system goes down");
+}
+// A surprise crowd spike inflates every standby wait time that day.
+const CROWD_SURGE_MULT = 1.5;
+function isCrowdSurgeToday(day){
+  return !!(state && state.curveballDay===day.dayNumber && state.curveballLabel==="Massive crowd surge");
 }
 function hoursForDay(day){
   return dayHasExtendedHours(day) ? [...HOURS, ...EXTENDED_HOURS] : HOURS;
@@ -724,6 +841,10 @@ const MUSIC_FILE_PATH = ""; // e.g. "theme.mp3" — leave blank to use synth mus
 const SFX_FILES = { drop:"", remove:"", purchase:"", gradeGood:"", gradeBad:"" };
 
 const sound = { sfxOn:true, musicOn:false, volume:0.32, ctx:null, musicEl:null };
+// On touch devices, HTML5 drag-and-drop (draggable="true") intercepts the touch gesture trying
+// to detect a possible drag, which can swallow the tap entirely and make cards feel "frozen" —
+// tap-to-select already exists as a full fallback, so drag is only enabled where it actually works.
+const IS_TOUCH_DEVICE = (typeof window!=="undefined") && (('ontouchstart' in window) || (navigator.maxTouchPoints>0));
 const scheduler = { timerId:null, nextNoteTime:0, beat:0, tempo:98, lookahead:25, scheduleAhead:0.12 };
 
 function ensureAudioCtx(){
@@ -950,7 +1071,15 @@ function generateClient(){
 let state = null;
 let showOnboarding = true; // shown automatically on first load; can be reopened via "How to Play"
 let showResetConfirm = false;
+let showAchievementGallery = false;
+let showStatsHistory = false;
+let showLeaderboard = false;
+let playerName = (function(){ try { return localStorage.getItem('sunshineco_playerName') || ""; } catch(e){ return ""; } })();
+let leaderboardState = { loading:false, error:null, rows:null };
 let pendingCoop = { enabled:false, agent1:"", agent2:"" }; // set on the client screen, attached to trip state on Start Planning
+let pendingH2H = { enabled:false, agent1:"", agent2:"" }; // head-to-head: same client, two separate itineraries, compared at the end
+let h2h = null; // { agent1, agent2, phase:1|2, agent1Report } — active only during a head-to-head run
+let h2hSeed = null; // clean clone of the shared trip setup (client/curveball/season, empty bookings), reused to give agent 2 a fair identical start
 
 /* ============================================================
    COSMETIC THEMES
@@ -1147,6 +1276,14 @@ function newGame(coopNames){
   const client = generateClient();
   const parks = ["MK","EPCOT","HS","AK"];
   const curveballDay = client.tripLengthDays>=2 ? rand(2, client.tripLengthDays) : null;
+  const curveballLabel = pick(["Afternoon rain moves in","A planned ride breaks down","A little one needs an early break","Surprise extended evening hours","Lightning Lane system goes down","Massive crowd surge"]);
+  const curveballPark = curveballDay ? parks[(curveballDay-1) % parks.length] : null;
+  let brokenRideId = null;
+  if(curveballLabel==="A planned ride breaks down" && curveballPark){
+    const candidates = RIDES[curveballPark].filter(r=>r.type!=="show" && r.type!=="fireworks" && r.type!=="meetgreet");
+    if(candidates.length) brokenRideId = pick(candidates).id;
+  }
+  const brokenSlotHour = curveballLabel==="A little one needs an early break" ? "1 PM" : null;
   let opportunityDay = null;
   if(client.tripLengthDays>=3 && Math.random()<0.5){
     do{ opportunityDay = rand(1, client.tripLengthDays); } while(opportunityDay===curveballDay);
@@ -1172,7 +1309,8 @@ function newGame(coopNames){
     hotelId: startHotel.id,
     roomType: smallestFittingRoomType(startHotel, client.size) || "standard",
     curveballDay, opportunityDay,
-    curveballLabel: pick(["Afternoon rain moves in","A planned ride breaks down","A little one needs an early break","Surprise extended evening hours"]),
+    curveballLabel,
+    brokenRideId, brokenSlotHour,
     textDay, textResolved:false,
     textMessage: pick([
       "Can we make today a rest day instead? The kids are wiped out.",
@@ -1180,6 +1318,8 @@ function newGame(coopNames){
       "One of us isn't feeling great — can today be a rest day instead?",
       "We'd love a slower day today, just resting at the hotel.",
     ]),
+    negotiation: { triggered:false, resolved:false, concernType:null, choice:null, missingTag:null },
+    leaderboardSubmitted:false, leaderboardSubmitMsg:null,
     coop: coopNames ? { agent1:coopNames.agent1||"Agent 1", agent2:coopNames.agent2||"Agent 2", turn:1 } : null,
     currentDay:1,
     view:"client",
@@ -1238,6 +1378,10 @@ function toggleLL(dayNum, slotHour){
   const day = state.days.find(d=>d.dayNumber===dayNum);
   const item = day.items[slotHour];
   if(!item || item.kind!=="ride") return;
+  if(isLLDownToday(day)){
+    state.llLimitMsg = "Lightning Lane's booking system is down park-wide today — standby only, for every ride.";
+    render(); return;
+  }
   if(!item.llUsed && item.llType==="multipass"){
     const { n, aTier } = countLLUsedForDay(day);
     const cap = repMaxLLPerDay();
@@ -1260,48 +1404,89 @@ function findRidePark(rideId){
   return Object.keys(RIDES).find(p => RIDES[p].some(r=>r.id===rideId));
 }
 
+// Real trips have natural limits: a handful of meals a day, not ten, and nobody
+// rides the same attraction (or eats at the same restaurant) over and over. These
+// caps are enforced at booking time so the exploit can't happen in the first place —
+// scoring can't be fooled by an itinerary that could never realistically exist.
+function diningCategory(id){
+  if(id.startsWith("snack_") || id.startsWith("event_treat_") || id.startsWith("fest_")) return "snack";
+  if(id.startsWith("souv_") || id.startsWith("shop_")) return "shop";
+  return "meal";
+}
+const DINING_CATEGORY_CAPS = { meal:4, snack:3, shop:3 };
+const RIDE_REPEAT_CAP = 2; // per ride, across the whole trip — fireworks are exempt (watching every night is realistic)
+
 function dropItem(dayNum, slotHour, payload){
   const day = state.days.find(d=>d.dayNumber===dayNum);
   const dayHours = hoursForDay(day);
   const hourIdx = curveIndexFor(dayHours, slotHour);
+  if(state.curveballDay===day.dayNumber && state.brokenSlotHour===slotHour && !day.items[slotHour]){
+    state.llLimitMsg = "That slot is reserved — the family needs an early break today. Try a different time.";
+    render(); return false;
+  }
   if(payload.kind==="travel"){
-    if(day.items[slotHour]){ state.llLimitMsg = "That slot is already booked."; render(); return; }
+    if(day.items[slotHour]){ state.llLimitMsg = "That slot is already booked."; render(); return false; }
     day.items[slotHour] = { kind:"travel", name:payload.label, span:1 };
   } else if(payload.kind==="activity"){
     const need = payload.hours || 1;
     const rawIdx = dayHours.indexOf(slotHour);
     const neededSlots = [];
     for(let i=0;i<need;i++) neededSlots.push(dayHours[rawIdx+i]);
-    if(neededSlots.some(s=>!s)){ state.llLimitMsg = `That's a ${need}-hour booking and there isn't enough day left — try an earlier slot.`; render(); return; }
-    if(neededSlots.some(s=>day.items[s])){ state.llLimitMsg = "That time is already booked — pick a clearer stretch."; render(); return; }
+    if(neededSlots.some(s=>!s)){ state.llLimitMsg = `That's a ${need}-hour booking and there isn't enough day left — try an earlier slot.`; render(); return false; }
+    if(neededSlots.some(s=>day.items[s])){ state.llLimitMsg = "That time is already booked — pick a clearer stretch."; render(); return false; }
     const price = payload.price[1]===0 ? 0 : priceInRange(payload.price, "Medium");
     day.items[slotHour] = { kind:"activity", id:payload.id, name:`${payload.name} (${need} hr)`, price, span:need };
     for(let i=1;i<need;i++) day.items[neededSlots[i]] = { kind:"spanned", parentHour:slotHour };
   } else if(payload.kind==="ride"){
-    if(payload.ride.type==="fireworks" && slotHour!==FIREWORKS_TIME){
+    if(day.items[slotHour]){ state.llLimitMsg = "That slot is already booked — remove the existing item first."; render(); return false; }
+    if(isRideClosedToday(day, payload.ride)){
+      state.llLimitMsg = state.curveballLabel==="Afternoon rain moves in"
+        ? `${payload.ride.name} is closed for the storm — water rides are shut down today.`
+        : `${payload.ride.name} is temporarily out of service today — pick something else.`;
+      render(); return false;
+    }    if(payload.ride.type==="fireworks" && slotHour!==FIREWORKS_TIME){
       state.llLimitMsg = `${payload.ride.name} only happens at ${FIREWORKS_TIME} — try that slot instead.`;
-      render(); return;
+      render(); return false;
+    }
+    if(payload.ride.type!=="fireworks"){
+      const existingCount = state.days.reduce((sum,d)=> sum + Object.values(d.items).filter(it=>it.kind==="ride" && it.id===payload.ride.id).length, 0);
+      if(existingCount >= RIDE_REPEAT_CAP){
+        state.llLimitMsg = `You've already booked ${payload.ride.name} ${RIDE_REPEAT_CAP} times this trip — time to try something else.`;
+        render(); return false;
+      }
     }
     const ridePark = findRidePark(payload.ride.id) || day.park;
     const hotelObj = HOTELS.find(h=>h.id===state.hotelId);
-    const earlyEntry = !!(hotelObj && hotelObj.earlyEntry && day.dayType!=="rest" && day.park!=="DS");
-    const wait = currentWait(payload.ride, hourIdx, day.crowdSeed, earlyEntry);
+    const earlyEntry = !!(hotelObj && hotelObj.earlyEntry && day.dayType!=="rest" && day.park!=="DS" && !WATER_PARKS.includes(day.park));
+    const wait = currentWait(payload.ride, hourIdx, day.crowdSeed, earlyEntry) * (isCrowdSurgeToday(day) ? CROWD_SURGE_MULT : 1);
+    const waitRounded = Math.max(5, Math.round(wait/5)*5);
     const isOpportunityDay = state.opportunityDay===day.dayNumber;
     const price = payload.ride.ll==="ill"
       ? Math.round(priceInRange(payload.ride.illPrice, day.crowdSeed) * (isOpportunityDay ? 0.7 : 1))
+      : payload.ride.ll==="none"
+      ? 0
       : priceInRange(MULTIPASS_PRICE[ridePark], day.crowdSeed);
     const needsTwoHours = wait > 60;
     if(needsTwoHours){
       const rawIdx = dayHours.indexOf(slotHour);
       const nextHour = dayHours[rawIdx+1];
-      if(!nextHour){ state.llLimitMsg = "This ride takes over an hour and won't fit this late in the day — try an earlier slot."; render(); return; }
-      if(day.items[nextHour]){ state.llLimitMsg = "This ride takes over an hour, but the next slot is already booked."; render(); return; }
-      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:2 };
+      if(!nextHour){ state.llLimitMsg = "This ride takes over an hour and won't fit this late in the day — try an earlier slot."; render(); return false; }
+      if(day.items[nextHour]){ state.llLimitMsg = "This ride takes over an hour, but the next slot is already booked."; render(); return false; }
+      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait:waitRounded, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:2 };
       day.items[nextHour] = { kind:"spanned", parentHour:slotHour };
     } else {
-      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:1 };
+      day.items[slotHour] = { kind:"ride", id:payload.ride.id, name:payload.ride.name, wait:waitRounded, llUsed:false, price, llType:payload.ride.ll, tier:payload.ride.tier||null, ridePark, span:1 };
     }
   } else {
+    if(day.items[slotHour]){ state.llLimitMsg = "That slot is already booked — remove the existing item first."; render(); return false; }
+    const category = diningCategory(payload.restaurant.id);
+    const cap = DINING_CATEGORY_CAPS[category];
+    const countToday = Object.values(day.items).filter(it=>it.kind==="dining" && diningCategory(it.id)===category).length;
+    if(countToday >= cap){
+      const label = category==="meal" ? "meals" : category==="snack" ? "snacks/treats" : "souvenir stops";
+      state.llLimitMsg = `That's ${cap} ${label} already booked today — real trips need some breathing room. Try a different day.`;
+      render(); return false;
+    }
     const price = priceInRange(payload.restaurant.price, "Medium");
     day.items[slotHour] = { kind:"dining", id:payload.restaurant.id, name:payload.restaurant.name, price, exclusive:!!payload.restaurant.exclusive };
   }
@@ -1309,6 +1494,7 @@ function dropItem(dayNum, slotHour, payload){
   state.dropCount = (state.dropCount||0) + 1;
   sfxDrop();
   render();
+  return true;
 }
 function removeItem(dayNum, slotHour){
   const day = state.days.find(d=>d.dayNumber===dayNum);
@@ -1346,6 +1532,8 @@ function bookedTagSet(){
         if(ride.height && ride.height>=44) tags.add("no_height_44_violated");
         if(["hs_rise","hs_falcon","ep_guardians","ak_flight_of_passage"].includes(ride.id)) tags.add("fandom_ride");
         if(ride.type==="meetgreet") tags.add("meet_greet");
+        if(ride.thrill==="mild" && ride.type==="thrill") tags.add("kiddie_ride_booked");
+        if(item.wait>45 && !item.llUsed) tags.add("long_queue_violated");
       }
       if(item.kind==="dining" && item.exclusive) tags.add("park_exclusive_item");
       if(item.kind==="dining" && item.id.startsWith("hd_")){ tags.add("named_restaurant"); tags.add("signature_ts"); }
@@ -1358,7 +1546,44 @@ function bookedTagSet(){
       if(item.kind==="activity" && item.id==="resort_pool") tags.add("rest_breaks");
     });
   });
+  if(state.photoPass) tags.add("photo_op");
+  const parkDayCount = state.days.filter(d=>d.dayType!=="rest").length || 1;
+  if(bookedRideIds.size >= parkDayCount*3) tags.add("max_rides");
   return { tags, illCount, mpCount, bookedRideIds };
+}
+
+// Fires once per trip, at or after the halfway point (by days with at least one booking),
+// with a concern pulled from whatever's actually true about the plan so far — a real budget
+// pace problem, a still-unmet must-have, or (if things look fine) just a happy check-in.
+function maybeTriggerNegotiation(){
+  if(!state || !state.client || !state.negotiation || state.negotiation.triggered) return;
+  const c = state.client;
+  const daysWithBookings = state.days.filter(d=>Object.keys(d.items).length>0).length;
+  if(daysWithBookings < Math.ceil(c.tripLengthDays/2)) return;
+  const spend = tripSpend();
+  const { tags } = bookedTagSet();
+  const met = c.mustHaves.filter(t=>tags.has(t));
+  const metPct = met.length / c.mustHaves.length;
+  const budgetPct = spend.total / c.budgetTotal;
+  state.negotiation.triggered = true;
+  if(budgetPct > 0.65){
+    state.negotiation.concernType = "budget";
+    state.negotiation.message = pick([
+      "We've been keeping an eye on the numbers... is this trip going to blow way past what we budgeted?",
+      "Not gonna lie, we're a little nervous about how much we've spent so far. Are we on track?",
+    ]);
+  } else if(metPct < 0.34){
+    const missing = c.mustHaves.find(t=>!tags.has(t));
+    state.negotiation.concernType = "musthave";
+    state.negotiation.missingTag = missing;
+    state.negotiation.message = `Halfway through planning and we haven't seen anything about "${(TAG_LABELS[missing]||missing).toLowerCase()}" yet — that was kind of important to us. Are we still going to get that?`;
+  } else {
+    state.negotiation.concernType = "happy";
+    state.negotiation.message = pick([
+      "Just checking in — this is looking amazing so far! Thank you!",
+      "Wanted to say the plan so far looks incredible. You're doing great!",
+    ]);
+  }
 }
 
 function buildReportCard(){
@@ -1378,6 +1603,14 @@ function buildReportCard(){
   if(c.llAttitude==="no_spend" && (illCount>0||mpCount>0)){ valueScore-=40; valueNotes.push("Client didn't want Lightning Lane spend, but it was booked anyway."); }
   if(c.llAttitude==="wants_top_2_only" && (illCount+mpCount)>2){ valueScore-=15; valueNotes.push("Lightning Lane spend went beyond the client's top priorities."); }
   if(valueNotes.length===0) valueNotes.push("Lightning Lane spend matched what this client actually wanted.");
+  if(state.negotiation && state.negotiation.resolved && state.negotiation.concernType==="budget"){
+    const n = state.negotiation;
+    if(n.choice==="goodwill"){ valueScore = Math.min(100, valueScore+5); valueNotes.push("The goodwill gesture you offered when they got nervous about money didn't go unnoticed."); }
+    else if(n.choice==="reassure"){
+      if(pct>1){ valueScore = Math.max(0, valueScore-5); valueNotes.push("You reassured them mid-trip that the budget was fine — but it went over anyway, which stung a bit more."); }
+      else { valueNotes.push("You reassured them mid-trip that the budget was under control, and it turned out to be true."); }
+    }
+  }
   if(c.hotelPreference){
     const hp = c.hotelPreference;
     const bookedHotel = HOTELS.find(h=>h.id===state.hotelId);
@@ -1395,6 +1628,9 @@ function buildReportCard(){
     if(t==="no_height_44") return tags.has("no_height_44_violated");
     if(t==="no_ill_spend") return illCount>0;
     if(t==="no_character_dining") return tags.has("character_meal");
+    if(t==="no_kiddie_rides") return tags.has("kiddie_ride_booked");
+    if(t==="no_long_queues") return tags.has("long_queue_violated");
+    if(t==="no_qs_only_days") return !tags.has("named_restaurant") && !tags.has("character_meal");
     return false;
   });
   let prefFinal = dealbreakerHit ? Math.max(0,prefScore-25) : prefScore;
@@ -1402,6 +1638,16 @@ function buildReportCard(){
   if(c.quirk && c.quirk.avoidRideId && bookedRideIds.has(c.quirk.avoidRideId)){
     prefFinal = Math.max(0, prefFinal-15);
     prefNote += " Also — they specifically hoped to avoid one ride that ended up on the itinerary.";
+  }
+  if(state.negotiation && state.negotiation.resolved && state.negotiation.concernType==="musthave"){
+    const n = state.negotiation;
+    const delivered = n.missingTag && tags.has(n.missingTag);
+    if(n.choice==="promise"){
+      if(delivered){ prefFinal = Math.min(100, prefFinal+5); prefNote += " You promised mid-trip that their top ask was still coming, and you delivered."; }
+      else { prefFinal = Math.max(0, prefFinal-10); prefNote += " You promised mid-trip that their top ask was still coming — it never showed up."; }
+    } else if(n.choice==="reassure"){
+      prefNote += delivered ? " They'd asked about it mid-trip, and it did end up getting booked." : " They'd asked about it mid-trip and were told not to worry — but it never made it in.";
+    }
   }
 
   // Efficiency (10) — total wait vs a light benchmark
@@ -1447,6 +1693,136 @@ function renderResetConfirmModal(){
         <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px;">
           <button class="btn secondary" id="cancelResetBtn">Cancel</button>
           <button class="btn" id="confirmResetBtn">Reset everything</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAchievementGallery(){
+  const categories = [
+    { label:"Milestones", items:ACHIEVEMENTS.filter(a=>!a.hidden && !["speed_booker","hot_streak","tier_list_complete"].includes(a.id)) },
+    { label:"Skill & streaks", items:ACHIEVEMENTS.filter(a=>["speed_booker","hot_streak","tier_list_complete"].includes(a.id)) },
+    { label:"Mystery achievements", items:ACHIEVEMENTS.filter(a=>a.hidden) },
+  ];
+  return `
+    <div class="overlay" id="achievementGalleryOverlay">
+      <div class="drawer" style="width:640px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">Achievement Gallery — ${unlockedAchievements.size}/${ACHIEVEMENTS.length}</h3>
+        ${categories.map(cat=>`
+          <div style="margin-top:16px;">
+            <b class="sans" style="display:block;text-transform:uppercase;font-size:11px;letter-spacing:.6px;color:var(--teal-dark);margin-bottom:8px;">${cat.label}</b>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
+              ${cat.items.map(a=>{
+                const done = unlockedAchievements.has(a.id);
+                const hideDesc = a.hidden && !done;
+                const icon = done ? (a.hidden ? "🌟" : "🏆") : "🔒";
+                return `
+                <div class="sans" style="border:1px solid var(--line-soft);border-radius:10px;padding:10px 12px;${done?'background:var(--teal-light);border-color:var(--teal);':'opacity:.72;'}">
+                  <div style="font-weight:700;font-size:12.5px;margin-bottom:3px;">${icon} ${hideDesc ? "???" : a.label}</div>
+                  <div style="font-size:11.5px;color:#5b5646;line-height:1.4;">${hideDesc ? "Mystery achievement — keep playing to discover it." : a.desc}</div>
+                  ${(done && a.bonusXp) ? `<div style="font-size:10.5px;color:var(--teal-dark);margin-top:4px;">+${a.bonusXp} bonus XP</div>` : ""}
+                </div>`;
+              }).join("")}
+            </div>
+          </div>`).join("")}
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeAchievementGallery">Close</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStatsHistory(){
+  const trips = tripLog;
+  const totalTrips = trips.length;
+  const avgScore = totalTrips ? Math.round(trips.reduce((s,t)=>s+t.score,0)/totalTrips) : 0;
+  const bestTrip = trips[0] || null;
+  const hotelCounts = {};
+  trips.forEach(t=>{ if(t.hotelName) hotelCounts[t.hotelName] = (hotelCounts[t.hotelName]||0)+1; });
+  const favoriteHotel = Object.entries(hotelCounts).sort((a,b)=>b[1]-a[1])[0];
+  const archCounts = {};
+  trips.forEach(t=>{ archCounts[t.archetype] = (archCounts[t.archetype]||0)+1; });
+  const favoriteArchetype = Object.entries(archCounts).sort((a,b)=>b[1]-a[1])[0];
+  const gradeCounts = {};
+  trips.forEach(t=>{ gradeCounts[t.grade] = (gradeCounts[t.grade]||0)+1; });
+  return `
+    <div class="overlay" id="statsHistoryOverlay">
+      <div class="drawer" style="width:600px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">Stats &amp; History</h3>
+        ${totalTrips===0 ? `<p class="sans" style="font-size:13px;color:#8a8267;">No completed trips logged yet this session — finish a booking to start building your history.</p>` : `
+        <div class="client-row" style="margin-top:12px;">
+          <div><b>Trips this session</b>${totalTrips}</div>
+          <div><b>Average score</b>${avgScore}/100</div>
+          <div><b>Career streak</b>${career.streak} in a row 90+</div>
+          <div><b>Best trip</b>${bestTrip ? `${bestTrip.grade} — ${bestTrip.familyName}` : "—"}</div>
+          <div><b>Favorite hotel</b>${favoriteHotel ? `${favoriteHotel[0]} (${favoriteHotel[1]}x)` : "—"}</div>
+          <div><b>Most-booked client type</b>${favoriteArchetype ? `${favoriteArchetype[0]} (${favoriteArchetype[1]}x)` : "—"}</div>
+        </div>
+        <div style="margin-top:14px;">
+          <b class="sans" style="display:block;text-transform:uppercase;font-size:11px;letter-spacing:.6px;color:var(--teal-dark);margin-bottom:6px;">Grade breakdown</b>
+          <div class="pill-list">${Object.entries(gradeCounts).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`<span class="pill want">${g} × ${n}</span>`).join("")}</div>
+        </div>
+        <div style="margin-top:14px;">
+          <b class="sans" style="display:block;text-transform:uppercase;font-size:11px;letter-spacing:.6px;color:var(--teal-dark);margin-bottom:6px;">Full trip log (best first)</b>
+          ${trips.map((t,i)=>`
+            <div class="log-row">
+              <span class="log-rank">#${i+1}</span>
+              <span class="log-name">${t.familyName}</span>
+              <span class="log-meta">${t.archetype} · ${t.size} guests · ${t.tripLengthDays}d · ${t.hotelName||''}</span>
+              <span class="log-grade">${t.grade}</span>
+              <span class="log-score">${t.score}/100</span>
+            </div>`).join("")}
+        </div>
+        <p style="margin-top:12px;font-size:11.5px;color:#8a8267;">This log lives only in your browser's memory for this session — reloading the page clears it.</p>
+        `}
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeStatsHistory">Close</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function loadLeaderboard(){
+  leaderboardState = { loading:true, error:null, rows:leaderboardState.rows };
+  render();
+  if(!window.firebaseGetLeaderboard){
+    leaderboardState = { loading:false, error:"leaderboard not connected", rows:leaderboardState.rows||[] };
+    render();
+    return;
+  }
+  window.firebaseGetLeaderboard(25).then(res=>{
+    leaderboardState = res.ok
+      ? { loading:false, error:null, rows:res.rows }
+      : { loading:false, error:res.error||"unknown error", rows:leaderboardState.rows };
+    render();
+  }).catch(e=>{
+    leaderboardState = { loading:false, error:e.message, rows:leaderboardState.rows };
+    render();
+  });
+}
+
+function renderLeaderboard(){
+  return `
+    <div class="overlay" id="leaderboardOverlay">
+      <div class="drawer" style="width:600px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">🌍 Global Leaderboard</h3>
+        <p class="sans" style="font-size:12px;color:#8a8267;margin-top:2px;">Top scores submitted by agents everywhere — highest score first.</p>
+        ${leaderboardState.loading ? `<p class="sans" style="font-size:13px;color:#8a8267;margin-top:14px;">Loading scores…</p>` : ""}
+        ${leaderboardState.error ? `<p class="sans" style="font-size:13px;color:var(--rust);margin-top:14px;">Couldn't load the leaderboard right now (${leaderboardState.error}). Check your connection and try again.</p>` : ""}
+        ${(!leaderboardState.loading && !leaderboardState.error && leaderboardState.rows) ? (
+          leaderboardState.rows.length===0
+            ? `<p class="sans" style="font-size:13px;color:#8a8267;margin-top:14px;">No scores submitted yet — be the first!</p>`
+            : leaderboardState.rows.map((row,i)=>`
+              <div class="log-row">
+                <span class="log-rank">#${i+1}</span>
+                <span class="log-name">${row.playerName||"Anonymous Agent"}</span>
+                <span class="log-meta">${row.familyName||''} · ${row.archetype||''} · ${row.tripLengthDays||'?'}d</span>
+                <span class="log-grade">${row.grade||''}</span>
+                <span class="log-score">${row.score}/100</span>
+              </div>`).join("")
+        ) : ""}
+        <div style="margin-top:18px;display:flex;justify-content:space-between;gap:10px;">
+          <button class="btn secondary" id="refreshLeaderboard">🔄 Refresh</button>
+          <button class="btn" id="closeLeaderboard">Close</button>
         </div>
       </div>
     </div>
@@ -1530,6 +1906,12 @@ function renderHome(){
       </p>
     </div>
     <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>Your agent name</h3>
+      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Used to tag your scores on the global leaderboard.</p>
+      <input type="text" id="playerNameInput" placeholder="Your agent name" value="${playerName}" maxlength="30" style="width:100%;max-width:320px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:13px;">
+      <div style="margin-top:10px;"><button class="btn secondary" id="openLeaderboard" style="font-size:11.5px;padding:7px 14px;">🌍 View global leaderboard</button></div>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
       <h3>Difficulty</h3>
       <div class="tray-filter" style="margin-bottom:8px;">
         ${Object.keys(DIFFICULTY).map(k=>`<button data-difficulty="${k}" class="${difficulty===k?'on':''}">${DIFFICULTY[k].label}</button>`).join("")}
@@ -1546,6 +1928,9 @@ function renderHome(){
     </div>
     ${showOnboarding ? renderOnboardingOverlay() : ""}
     ${showResetConfirm ? renderResetConfirmModal() : ""}
+    ${showAchievementGallery ? renderAchievementGallery() : ""}
+    ${showStatsHistory ? renderStatsHistory() : ""}
+    ${showLeaderboard ? renderLeaderboard() : ""}
     <div class="home-panels">
       <div class="home-panel">
         <h3>Credits</h3>
@@ -1580,6 +1965,7 @@ function renderHome(){
         }).join("")}
       </div>
       <p style="margin-top:10px;font-size:11px;color:#8a8267;">🌫️ Mystery achievements are hidden until you stumble into them — they pay out bonus XP on top of the normal trip reward.</p>
+      <div style="margin-top:10px;"><button class="btn secondary" id="openAchievementGallery" style="font-size:11.5px;padding:7px 14px;">🏆 View full achievement gallery</button></div>
     </div>
     <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
       <h3>Themes</h3>
@@ -1611,7 +1997,7 @@ function renderHome(){
           <span class="log-grade">${t.grade}</span>
           <span class="log-score">${t.score}/100</span>
         </div>`).join("")}
-      <p style="margin-top:12px;font-size:11.5px;color:#8a8267;">This log lives only in your browser's memory for this session — reloading the page clears it. Want it to persist across visits? Add a <code>localStorage</code> save/load pair around the <code>tripLog</code> array near the top of the script.</p>
+      <div style="margin-top:12px;"><button class="btn secondary" id="openStatsHistory" style="font-size:11.5px;padding:7px 14px;">📊 Full stats &amp; history</button></div>
     </div>` : ''}
   `;
 }
@@ -1642,11 +2028,17 @@ function renderClientScreen(){
         <div class="pill-list">${c.dealbreakers.length? c.dealbreakers.map(t=>`<span class="pill avoid">${TAG_LABELS[t]||t}</span>`).join("") : '<span class="pill avoid">None stated</span>'}</div>
       </div>
       <div class="sans" style="margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;"><input type="checkbox" id="coopToggle" ${pendingCoop.enabled?'checked':''}> 🎮 Co-op mode (pass and play with a second agent)</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;"><input type="checkbox" id="coopToggle" ${pendingCoop.enabled?'checked':''} ${pendingH2H.enabled?'disabled':''}> 🎮 Co-op mode (pass and play with a second agent, same itinerary)</label>
         ${pendingCoop.enabled ? `
         <div style="display:flex;gap:10px;margin-top:10px;">
           <input type="text" id="coopName1" placeholder="Agent 1 name" value="${pendingCoop.agent1}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
           <input type="text" id="coopName2" placeholder="Agent 2 name" value="${pendingCoop.agent2}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
+        </div>` : ''}
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-top:10px;"><input type="checkbox" id="h2hToggle" ${pendingH2H.enabled?'checked':''} ${pendingCoop.enabled?'disabled':''}> 🆚 Head-to-head (two agents each plan their own itinerary for the same client, then compare)</label>
+        ${pendingH2H.enabled ? `
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <input type="text" id="h2hName1" placeholder="Agent 1 name" value="${pendingH2H.agent1}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
+          <input type="text" id="h2hName2" placeholder="Agent 2 name" value="${pendingH2H.agent2}" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--line);font-family:var(--sans);font-size:12px;">
         </div>` : ''}
       </div>
       <div class="client-actions">
@@ -1659,6 +2051,7 @@ function renderClientScreen(){
 
 function renderPlanScreen(){
   const c = state.client;
+  maybeTriggerNegotiation();
   const spend = tripSpend();
   const over = spend.total > c.budgetTotal;
   if(!state.planTab) state.planTab = "book";
@@ -1673,7 +2066,7 @@ function renderPlanScreen(){
   const fireworksList = allParkRides.filter(r=>r.type==="fireworks");
   const diningList = RESTAURANTS[trayParkCode]||[];
 
-  const rideIcon = (r)=> r.type==="meetgreet" ? "🤝" : r.thrill==="intense" ? "🎢" : r.thrill==="moderate" ? "🎡" : "🎠";
+  const rideIcon = (r)=> r.type==="meetgreet" ? "🤝" : r.type==="water" ? "🌊" : r.thrill==="intense" ? "🎢" : r.thrill==="moderate" ? "🎡" : "🎠";
   const diningIcon = (d)=> d.type==="character" ? "👑" : d.type==="TS" ? "🍽️" : "🥤";
 
   const isSelected = (kind,id)=> state.selectedCard && state.selectedCard.kind===kind && state.selectedCard.id===id;
@@ -1684,44 +2077,47 @@ function renderPlanScreen(){
   const showSnacks = state.trayFilter==="all" || state.trayFilter==="snack";
   const showShop = state.trayFilter==="all" || state.trayFilter==="shop";
 
-  const trayItems = (isRest || isDS || !showRides) ? "" : rideList.map(r=>`
-    <div class="card ${r.ll==='ill'?'ill':''} ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}">
+  const trayItems = (isRest || isDS || !showRides) ? "" : rideList.map(r=>{
+    const closed = isRideClosedToday(day, r);
+    return `
+    <div class="card ${r.ll==='ill'?'ill':''} ${isSelected('ride',r.id)?'selected':''} ${closed?'closed':''}" draggable="${(closed||IS_TOUCH_DEVICE)?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" aria-disabled="${closed}" data-kind="ride" data-id="${r.id}" ${closed?'data-disabled="true"':''}>
       <div class="name">${rideIcon(r)} ${r.name}${r.tier?` <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${r.tier==='A'?'var(--rust-light)':'var(--teal-light)'};color:${r.tier==='A'?'var(--rust)':'var(--teal-dark)'};">${r.tier} tier</span>`:''}</div>
-      <div class="meta"><span>${r.type==='meetgreet'?'Meet & Greet':r.thrill}${r.height?` · ${r.height}in+`:''}</span><span>${r.ll==='ill'?'ILL':r.ll==='multipass'?'Multi Pass':'Standby'}</span></div>
-    </div>`).join("");
+      <div class="meta"><span>${closed ? '⛔ Closed today' : (r.type==='meetgreet'?'Meet & Greet':r.thrill)+(r.height?` · ${r.height}in+`:'')}</span><span>${closed?'':(r.ll==='ill'?'ILL':r.ll==='multipass'?'Multi Pass':'Standby')}</span></div>
+    </div>`;
+  }).join("");
   const trayShows = (isRest || isDS || !showShows) ? "" : showList.map(r=>`
-    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}">
+    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}">
       <div class="name">🎭 ${r.name}</div>
       <div class="meta"><span>Show</span><span>Standby</span></div>
     </div>`).join("");
   const trayFireworks = (isRest || isDS || !showFireworks) ? "" : fireworksList.map(r=>`
-    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}" style="border-left:4px solid var(--pop);">
+    <div class="card ${isSelected('ride',r.id)?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('ride',r.id)}" data-kind="ride" data-id="${r.id}" style="border-left:4px solid var(--pop);">
       <div class="name">🎆 ${r.name}</div>
       <div class="meta"><span>Only at ${FIREWORKS_TIME}</span><span>Free</span></div>
     </div>`).join("") || (showFireworks && !isRest && !isDS ? `<p class="sans" style="font-size:11.5px;color:#8a8267;">No fireworks show at this park.</p>` : "");
   const trayDining = isRest
     ? (showDining ? `
-      <div class="card dining ${isSelected('hotelDining','hotel_dining')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('hotelDining','hotel_dining')}" data-kind="hotelDining" data-id="hotel_dining">
+      <div class="card dining ${isSelected('hotelDining','hotel_dining')?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('hotelDining','hotel_dining')}" data-kind="hotelDining" data-id="hotel_dining">
         <div class="name">🍽️ Hotel dining</div>
         <div class="meta"><span>Quick service${HOTEL_DINING[state.hotelId]?' or a signature restaurant':''}</span><span>Pick on booking</span></div>
       </div>` : "")
     : (!showDining ? "" : diningList.map(rest=>`
-      <div class="card dining ${isSelected('dining',rest.id)?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('dining',rest.id)}" data-kind="dining" data-id="${rest.id}">
+      <div class="card dining ${isSelected('dining',rest.id)?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('dining',rest.id)}" data-kind="dining" data-id="${rest.id}">
         <div class="name">${diningIcon(rest)} ${rest.name}</div>
         <div class="meta"><span>${rest.type}</span><span>${fmtMoney(priceInRange(rest.price,"Medium"))}/pp</span></div>
       </div>`).join(""));
   const traySnack = (isRest || !showSnacks) ? "" : `
-    <div class="card dining ${isSelected('snack','snack_cart')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('snack','snack_cart')}" data-kind="snack" data-id="snack_cart">
+    <div class="card dining ${isSelected('snack','snack_cart')?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('snack','snack_cart')}" data-kind="snack" data-id="snack_cart">
       <div class="name">🍿 Snack cart</div>
       <div class="meta"><span>Churro, popcorn, pretzel & more</span><span>Pick on booking</span></div>
     </div>`;
   const trayShop = (isRest || !showShop) ? "" : `
-    <div class="card dining ${isSelected('shop','shop_cart')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('shop','shop_cart')}" data-kind="shop" data-id="shop_cart">
+    <div class="card dining ${isSelected('shop','shop_cart')?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('shop','shop_cart')}" data-kind="shop" data-id="shop_cart">
       <div class="name">🛍️ Souvenir stand</div>
       <div class="meta"><span>Keepsakes, plush, apparel & more</span><span>Pick on booking</span></div>
     </div>`;
   const trayActivities = !isRest ? "" : `
-    <div class="card dining ${isSelected('activity','resort_activities')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('activity','resort_activities')}" data-kind="activity" data-id="resort_activities">
+    <div class="card dining ${isSelected('activity','resort_activities')?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('activity','resort_activities')}" data-kind="activity" data-id="resort_activities">
       <div class="name">🏖️ Resort activities</div>
       <div class="meta"><span>Pool, fishing${RESORT_ACTIVITIES.resort_spa.availableAt.includes(state.hotelId)?', spa':''}</span><span>Pick length & booking</span></div>
     </div>`;
@@ -1731,16 +2127,23 @@ function renderPlanScreen(){
     const item = day.items[h];
     let content, dropAttrs = `data-slot="${h}" role="button" tabindex="0" aria-label="${h} — ${item?item.name:(state.selectedCard?'Tap to place '+state.selectedCard.label:'Empty')}"`;
     if(!item){
-      content = state.selectedCard
-        ? `<span style="color:var(--teal); font-size:11.5px; font-family:var(--sans); font-weight:600;">Tap to place "${state.selectedCard.label}"</span>`
-        : `<span style="color:#c9bd9c; font-size:11.5px; font-family:var(--sans);">+ Drag or tap-to-place</span>`;
+      const isReserved = state.curveballDay===day.dayNumber && state.brokenSlotHour===h;
+      if(isReserved){
+        content = `<span style="color:#8a1f3a; font-size:11.5px; font-family:var(--sans); font-weight:600;">🚫 Reserved — early break</span>`;
+        dropAttrs = `role="button" tabindex="0" aria-label="${h} — reserved for an early break"`;
+      } else {
+        content = state.selectedCard
+          ? `<span style="color:var(--teal); font-size:11.5px; font-family:var(--sans); font-weight:600;">Tap to place "${state.selectedCard.label}"</span>`
+          : `<span style="color:#c9bd9c; font-size:11.5px; font-family:var(--sans);">+ Drag or tap-to-place</span>`;
+      }
     }
     else if(item.kind==="spanned"){
       content = `<div class="stub" style="background:transparent;border-style:solid;opacity:.5;font-size:11px;">continues from ${item.parentHour}</div>`;
       dropAttrs = ""; // not a drop target, part of the ride above
     }
     else if(item.kind==="ride"){
-      content = `<div class="stub"><div><b>${item.name}</b>${item.span===2?' <span style="font-size:10px;color:#7a5314;">(2 hr)</span>':''}${item.tier?` <span style="font-size:10px;color:#7a5314;">[${item.tier} tier]</span>`:''}<div class="wait">${item.wait} min standby${item.llType!=='none'?` · <a href="#" data-ll-toggle="${h}" style="color:var(--teal-dark);">${item.llUsed?`LL used (${fmtMoney(item.price)})`:'Use Lightning Lane'}</a>`:''}</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
+      const llDown = isLLDownToday(day);
+      content = `<div class="stub"><div><b>${item.name}</b>${item.span===2?' <span style="font-size:10px;color:#7a5314;">(2 hr)</span>':''}${item.tier?` <span style="font-size:10px;color:#7a5314;">[${item.tier} tier]</span>`:''}<div class="wait">${item.wait} min standby${llDown ? ` · <span style="color:#8a1f3a;">LL down today</span>` : item.llType!=='none'?` · <a href="#" data-ll-toggle="${h}" style="color:var(--teal-dark);">${item.llUsed?`LL used (${fmtMoney(item.price)})`:'Use Lightning Lane'}</a>`:''}</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
     } else if(item.kind==="travel"){
       content = `<div class="stub" style="background:var(--rust-light);border-color:var(--rust);"><div><b>${item.name}</b><div class="wait">Switching parks</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
     } else if(item.kind==="activity"){
@@ -1749,7 +2152,7 @@ function renderPlanScreen(){
     } else {
       content = `<div class="stub dining"><div><b>${item.name}</b><div class="wait">${fmtMoney(item.price)}/pp</div></div><button data-remove="${h}" aria-label="Remove">&times;</button></div>`;
     }
-    return `<div class="slot-row"><div class="slot-time">${h}</div><div class="slot-drop" ${dropAttrs}>${content}</div></div>`;
+    return `<div class="slot-row"><div class="slot-time">${h}</div><div class="slot-drop${(!item && state.curveballDay===day.dayNumber && state.brokenSlotHour===h)?' reserved-slot':''}" ${dropAttrs}>${content}</div></div>`;
   }).join("");
 
   const isExtendedHoursDay = state.curveballDay===day.dayNumber && state.curveballLabel==="Surprise extended evening hours";
@@ -1763,6 +2166,16 @@ function renderPlanScreen(){
   const curveballBanner = state.curveballDay===day.dayNumber
     ? (isExtendedHoursDay
         ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">✨ Curveball — Surprise extended evening hours! The park stays open until 11 PM today — two extra hour slots just opened up below.</div>`
+        : state.curveballLabel==="A planned ride breaks down"
+        ? `<div class="curveball-banner">⛔ Curveball — ${(()=>{ const r=Object.values(RIDES).flat().find(r=>r.id===state.brokenRideId); return r?r.name:"A ride"; })()} has broken down and is closed for the day. It's grayed out in the tray below.</div>`
+        : state.curveballLabel==="A little one needs an early break"
+        ? `<div class="curveball-banner">😴 Curveball — the family needs an early break today. The ${state.brokenSlotHour} slot is reserved and can't be booked.</div>`
+        : isRainDay
+        ? `<div class="curveball-banner">🌧️ Curveball — Afternoon rain moves in. Water rides are closed for the day — they're grayed out in the tray below.</div>`
+        : state.curveballLabel==="Lightning Lane system goes down"
+        ? `<div class="curveball-banner">📵 Curveball — Lightning Lane's booking system is down park-wide today. No Multi Pass or Individual Lightning Lane — every ride is standby-only.</div>`
+        : state.curveballLabel==="Massive crowd surge"
+        ? `<div class="curveball-banner">👥 Curveball — A massive crowd surge hit the park today. Standby waits are running well above normal on everything.</div>`
         : `<div class="curveball-banner">Curveball — ${state.curveballLabel}. Plan around it today.</div>`)
     : "";
   const opportunityBanner = state.opportunityDay===day.dayNumber
@@ -1785,7 +2198,7 @@ function renderPlanScreen(){
   const hintsOn = DIFFICULTY[difficulty].hintsOn;
   const hintBanner = state.hintMsg ? `<div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">💡 ${state.hintMsg}</div>` : "";
 
-  const tabDefs = [["book","📋 Book"],["setup","🏨 Trip Setup"],["brief","🗂️ Client Brief"],["budget","💰 Budget"]];
+  const tabDefs = [["book","📋 Book"],["setup","🏨 Trip Setup"],["brief","🗂️ Client Brief"],["messages",`💬 Messages${(state.negotiation.triggered && !state.negotiation.resolved) ? ' •' : ''}`],["budget","💰 Budget"]];
   const subnav = `<div class="subnav">${tabDefs.map(([k,label])=>`<button data-plan-tab="${k}" class="${state.planTab===k?'on':''}">${label}</button>`).join("")}</div>`;
 
   let tabContent = "";
@@ -1807,10 +2220,10 @@ function renderPlanScreen(){
         </select>
       </label>
       <span class="crowd-tag crowd-${day.crowdSeed}">${day.crowdSeed} crowd day</span>
-      ${state.parkHopper ? `<label>Hop to:
+      ${(state.parkHopper && !WATER_PARKS.includes(park)) ? `<label>Hop to:
         <select id="secondParkSelect">
           <option value="">None today</option>
-          ${Object.keys(PARK_NAMES).filter(p=>p!==park).map(p=>`<option value="${p}" ${p===day.secondPark?'selected':''}>${PARK_NAMES[p]}</option>`).join("")}
+          ${Object.keys(PARK_NAMES).filter(p=>p!==park && !WATER_PARKS.includes(p)).map(p=>`<option value="${p}" ${p===day.secondPark?'selected':''}>${PARK_NAMES[p]}</option>`).join("")}
         </select>
       </label>` : ''}` : ''}
       ${curveballBanner}
@@ -1834,7 +2247,7 @@ function renderPlanScreen(){
           <button data-filter="fireworks" class="${state.trayFilter==='fireworks'?'on':''}">🎆 Fireworks</button>
           <button data-filter="shop" class="${state.trayFilter==='shop'?'on':''}">🛍️ Shop</button>
         </div>
-        ${day.secondPark ? `<div class="card ${isSelected('travel','travel')?'selected':''}" draggable="true" role="button" tabindex="0" aria-pressed="${isSelected('travel','travel')}" data-kind="travel" data-id="travel" style="border-left:4px solid var(--rust);">
+        ${day.secondPark ? `<div class="card ${isSelected('travel','travel')?'selected':''}" draggable="${IS_TOUCH_DEVICE?'false':'true'}" role="button" tabindex="0" aria-pressed="${isSelected('travel','travel')}" data-kind="travel" data-id="travel" style="border-left:4px solid var(--rust);">
           <div class="name">Travel to ${state.trayPark==='home'?PARK_NAMES[day.secondPark]:PARK_NAMES[park]}</div>
           <div class="meta"><span>~1 hr commute</span><span>Drag or tap, then tap a slot</span></div>
         </div>` : ''}
@@ -1920,6 +2333,36 @@ function renderPlanScreen(){
         <div><b>Budget</b>${fmtMoney(c.budgetTotal)} (${c.budgetTier})</div>
         <div><b>Lightning Lane style</b>${c.llAttitude.replace(/_/g,' ')}</div>
       </div>
+    </div>`;
+  } else if(state.planTab==="messages"){
+    const n = state.negotiation;
+    tabContent = `
+    <div class="brief-panel">
+      <h3>Messages</h3>
+      ${!n.triggered ? `
+        <p class="sans" style="font-size:13px;color:#8a8267;">No messages yet — the family will check in once you're roughly halfway through planning their trip.</p>
+      ` : !n.resolved ? `
+        <div class="curveball-banner" style="background:var(--pop-light);border-color:var(--pop);color:#8a1f3a;">📱 "${n.message}"</div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+          ${n.concernType==="budget" ? `
+            <button class="btn secondary" id="negoReassureBtn">Reassure them — hold the plan</button>
+            <button class="btn" id="negoGoodwillBtn">Offer a small goodwill gesture</button>
+          ` : n.concernType==="musthave" ? `
+            <button class="btn secondary" id="negoReassureBtn">Reassure them — it's coming</button>
+            <button class="btn" id="negoPromiseBtn">Promise to prioritize it</button>
+          ` : `
+            <button class="btn" id="negoDismissBtn">Glad to hear it!</button>
+          `}
+        </div>
+        <p class="sans" style="margin-top:12px;font-size:11.5px;color:#8a8267;">
+          ${n.concernType==="budget" ? "Reassuring them costs nothing but risks looking bad if the budget really does run over. A goodwill gesture guarantees a little extra goodwill, win or lose." :
+            n.concernType==="musthave" ? "Reassuring them is low-risk. Promising to prioritize it pays off if it actually gets booked before the trip ends — but backfires if it doesn't." :
+            "Just a nice check-in — nothing to negotiate here."}
+        </p>
+      ` : `
+        <div class="curveball-banner" style="background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);">📱 "${n.message}"</div>
+        <p class="sans" style="margin-top:10px;font-size:12.5px;color:#5b5646;">You responded — this'll factor into how the trip wraps up.</p>
+      `}
     </div>`;
   } else if(state.planTab==="budget"){
     const pct = (v)=>Math.min(100, Math.round(v/c.budgetTotal*100));
@@ -2073,6 +2516,7 @@ function logTrip(r){
     familyName:c.familyName, archetype:c.archetype.label, size:c.size,
     tripLengthDays:c.tripLengthDays, grade:r.grade, score:r.final,
     budgetTotal:c.budgetTotal, spent:r.spend.total, loggedAt:new Date(),
+    hotelId:state.hotelId, hotelName:(HOTELS.find(h=>h.id===state.hotelId)||{}).name || "Unknown",
   });
   tripLog.sort((a,b)=>b.score-a.score);
 
@@ -2155,6 +2599,8 @@ function renderReportScreen(){
   lastReportData = r;
   lastReportPassed = r.final>=75;
   if(!state.reportLogged){ state.reportLogged = true; logTrip(r); }
+  if(h2h && h2h.phase===1){ h2h.agent1Report = r; }
+  if(h2h && h2h.phase===2){ return renderH2HComparisonScreen(h2h.agent1Report, r); }
   const catBar = (label, score)=> `
     <div class="cat-row"><div class="label"><span>${label}</span><span>${score}/100</span></div>
     <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div></div>`;
@@ -2166,7 +2612,7 @@ function renderReportScreen(){
   return `
     <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Agent performance review</span></div>
     <div class="report">
-      <div class="grade-box"><div class="grade">${r.grade}</div><div class="score">${r.final} / 100 · ${state.client.familyName}</div>${state.coop?`<div class="score" style="margin-top:2px;">🎮 Booked together by ${state.coop.agent1} &amp; ${state.coop.agent2}</div>`:''}</div>
+      <div class="grade-box"><div class="grade">${r.grade}</div><div class="score">${r.final} / 100 · ${state.client.familyName}</div>${state.coop?`<div class="score" style="margin-top:2px;">🎮 Booked together by ${state.coop.agent1} &amp; ${state.coop.agent2}</div>`:''}${(h2h && h2h.phase===1)?`<div class="score" style="margin-top:2px;">🆚 Head-to-head — ${h2h.agent1}'s itinerary</div>`:''}</div>
       ${levelBanner}${achBanner}
       ${catBar("Budget adherence (40%)", r.budgetScore)}
       ${catBar("Trip value (30%)", r.valueScore)}
@@ -2175,8 +2621,55 @@ function renderReportScreen(){
       <ul class="feedback-list">${r.feedback.map(f=>`<li>${f}</li>`).join("")}</ul>
       <div class="family-letter">${letter.split("\n").map(line=>line?`<p>${line}</p>`:'').join("")}</div>
       <div class="sans" style="font-size:11.5px;color:#6b6555;margin-top:10px;">Saved to your trip log — check it from the home screen.</div>
-      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;"><button class="btn" id="newClientBtn">Take next client</button><button class="btn secondary" id="viewLogBtn">View trip log</button><button class="btn secondary" id="shareCardBtn">📤 Share card</button></div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn secondary" id="submitLeaderboardBtn" ${state.leaderboardSubmitted?'disabled':''} style="font-size:12.5px;padding:9px 16px;">${state.leaderboardSubmitted?'✅ Submitted to leaderboard':'🌍 Submit to global leaderboard'}</button>
+        ${state.leaderboardSubmitMsg ? `<span class="sans" style="font-size:11.5px;color:${state.leaderboardSubmitMsg.startsWith('Couldn')?'var(--rust)':'var(--teal-dark)'};">${state.leaderboardSubmitMsg}</span>` : ''}
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        ${h2h && h2h.phase===1
+          ? `<button class="btn" id="h2hHandoffBtn">🆚 Hand off to ${h2h.agent2} →</button>`
+          : `<button class="btn" id="newClientBtn">Take next client</button><button class="btn secondary" id="viewLogBtn">View trip log</button><button class="btn secondary" id="shareCardBtn">📤 Share card</button>`}
+      </div>
       <canvas id="shareCanvas" width="640" height="400" style="display:none;"></canvas>
+    </div>
+  `;
+}
+
+function renderH2HComparisonScreen(r1, r2){
+  const winner = r1.final===r2.final ? null : (r1.final>r2.final ? h2h.agent1 : h2h.agent2);
+  const catBar2 = (label, s1, s2)=> `
+    <div class="cat-row"><div class="label"><span>${label}</span><span>${s1} vs ${s2}</span></div>
+    <div style="display:flex;gap:4px;">
+      <div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:${s1}%"></div></div>
+      <div class="bar-track" style="flex:1;"><div class="bar-fill" style="width:${s2}%"></div></div>
+    </div></div>`;
+  return `
+    <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Head-to-head results</span></div>
+    <div class="report">
+      <div class="grade-box">
+        <div class="grade">${winner ? "🏆" : "🤝"}</div>
+        <div class="score">${winner ? `${winner} wins!` : "It's a tie!"} · ${state.client.familyName}</div>
+      </div>
+      <div class="client-row" style="margin-top:14px;">
+        <div><b>${h2h.agent1}</b>${r1.grade} — ${r1.final}/100</div>
+        <div><b>${h2h.agent2}</b>${r2.grade} — ${r2.final}/100</div>
+      </div>
+      ${catBar2("Budget adherence (40%)", r1.budgetScore, r2.budgetScore)}
+      ${catBar2("Trip value (30%)", r1.valueScore, r2.valueScore)}
+      ${catBar2("Preference match (20%)", r1.prefScore, r2.prefScore)}
+      ${catBar2("Efficiency (10%)", r1.effScore, r2.effScore)}
+      <div class="sans" style="font-size:12px;margin-top:16px;">
+        <b style="display:block;text-transform:uppercase;color:var(--teal-dark);margin-bottom:4px;">${h2h.agent1}'s notes</b>
+        <ul class="feedback-list">${r1.feedback.map(f=>`<li>${f}</li>`).join("")}</ul>
+      </div>
+      <div class="sans" style="font-size:12px;margin-top:12px;">
+        <b style="display:block;text-transform:uppercase;color:var(--teal-dark);margin-bottom:4px;">${h2h.agent2}'s notes</b>
+        <ul class="feedback-list">${r2.feedback.map(f=>`<li>${f}</li>`).join("")}</ul>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn" id="h2hNewRoundBtn">Start a new round</button>
+        <button class="btn secondary" id="h2hBackHomeBtn">Back to home</button>
+      </div>
     </div>
   `;
 }
@@ -2221,6 +2714,25 @@ function wireEvents(){
   });
   const closeOnboarding = document.getElementById("closeOnboarding");
   if(closeOnboarding) closeOnboarding.onclick = ()=>{ showOnboarding = false; render(); };
+  const openAchievementGallery = document.getElementById("openAchievementGallery");
+  if(openAchievementGallery) openAchievementGallery.onclick = ()=>{ showAchievementGallery = true; render(); };
+  const closeAchievementGallery = document.getElementById("closeAchievementGallery");
+  if(closeAchievementGallery) closeAchievementGallery.onclick = ()=>{ showAchievementGallery = false; render(); };
+  const openStatsHistory = document.getElementById("openStatsHistory");
+  if(openStatsHistory) openStatsHistory.onclick = ()=>{ showStatsHistory = true; render(); };
+  const closeStatsHistory = document.getElementById("closeStatsHistory");
+  if(closeStatsHistory) closeStatsHistory.onclick = ()=>{ showStatsHistory = false; render(); };
+  const openLeaderboard = document.getElementById("openLeaderboard");
+  if(openLeaderboard) openLeaderboard.onclick = ()=>{ showLeaderboard = true; loadLeaderboard(); };
+  const closeLeaderboard = document.getElementById("closeLeaderboard");
+  if(closeLeaderboard) closeLeaderboard.onclick = ()=>{ showLeaderboard = false; render(); };
+  const refreshLeaderboard = document.getElementById("refreshLeaderboard");
+  if(refreshLeaderboard) refreshLeaderboard.onclick = ()=>{ loadLeaderboard(); };
+  const playerNameInput = document.getElementById("playerNameInput");
+  if(playerNameInput) playerNameInput.oninput = (e)=>{
+    playerName = e.target.value;
+    try { localStorage.setItem('sunshineco_playerName', playerName); } catch(err){}
+  };
   document.querySelectorAll("[data-item-choice]").forEach(b=>{
     b.onclick = ()=>{
       const list = getPickerList();
@@ -2251,6 +2763,11 @@ function wireEvents(){
   if(startPlan) startPlan.onclick = ()=>{
     if(pendingCoop.enabled){
       state.coop = { agent1: pendingCoop.agent1.trim()||"Agent 1", agent2: pendingCoop.agent2.trim()||"Agent 2", turn:1 };
+    } else if(pendingH2H.enabled){
+      h2h = { agent1: pendingH2H.agent1.trim()||"Agent 1", agent2: pendingH2H.agent2.trim()||"Agent 2", phase:1, agent1Report:null };
+      h2hSeed = JSON.parse(JSON.stringify(state)); // clean snapshot — days are still empty at this point
+    } else {
+      h2h = null; h2hSeed = null;
     }
     state.view="plan"; render();
   };
@@ -2259,11 +2776,52 @@ function wireEvents(){
   const newClientBtn = document.getElementById("newClientBtn");
   if(newClientBtn) newClientBtn.onclick = ()=>newGame();
   const coopToggle = document.getElementById("coopToggle");
-  if(coopToggle) coopToggle.onchange = (e)=>{ pendingCoop.enabled = e.target.checked; render(); };
+  if(coopToggle) coopToggle.onchange = (e)=>{ pendingCoop.enabled = e.target.checked; if(e.target.checked) pendingH2H.enabled = false; render(); };
   const coopName1 = document.getElementById("coopName1");
   if(coopName1) coopName1.oninput = (e)=>{ pendingCoop.agent1 = e.target.value; };
   const coopName2 = document.getElementById("coopName2");
   if(coopName2) coopName2.oninput = (e)=>{ pendingCoop.agent2 = e.target.value; };
+  const h2hToggle = document.getElementById("h2hToggle");
+  if(h2hToggle) h2hToggle.onchange = (e)=>{ pendingH2H.enabled = e.target.checked; if(e.target.checked) pendingCoop.enabled = false; render(); };
+  const h2hName1 = document.getElementById("h2hName1");
+  if(h2hName1) h2hName1.oninput = (e)=>{ pendingH2H.agent1 = e.target.value; };
+  const h2hName2 = document.getElementById("h2hName2");
+  if(h2hName2) h2hName2.oninput = (e)=>{ pendingH2H.agent2 = e.target.value; };
+  const submitLeaderboardBtn = document.getElementById("submitLeaderboardBtn");
+  if(submitLeaderboardBtn) submitLeaderboardBtn.onclick = ()=>{
+    if(!window.firebaseSubmitScore){
+      state.leaderboardSubmitMsg = "Couldn't connect to the leaderboard right now.";
+      render(); return;
+    }
+    state.leaderboardSubmitMsg = "Submitting…";
+    render();
+    window.firebaseSubmitScore({
+      playerName: playerName || "Anonymous Agent",
+      familyName: state.client.familyName,
+      archetype: state.client.archetype.label,
+      grade: lastReportData.grade,
+      score: lastReportData.final,
+      tripLengthDays: state.client.tripLengthDays,
+    }).then(res=>{
+      if(res.ok){ state.leaderboardSubmitted = true; state.leaderboardSubmitMsg = "Submitted! Check the global leaderboard from the home screen."; }
+      else { state.leaderboardSubmitMsg = "Couldn't submit — try again in a moment."; }
+      render();
+    }).catch(()=>{
+      state.leaderboardSubmitMsg = "Couldn't submit — try again in a moment.";
+      render();
+    });
+  };
+  const h2hHandoffBtn = document.getElementById("h2hHandoffBtn");
+  if(h2hHandoffBtn) h2hHandoffBtn.onclick = ()=>{
+    state = JSON.parse(JSON.stringify(h2hSeed));
+    h2h.phase = 2;
+    state.view = "plan";
+    render();
+  };
+  const h2hNewRoundBtn = document.getElementById("h2hNewRoundBtn");
+  if(h2hNewRoundBtn) h2hNewRoundBtn.onclick = ()=>{ newGame(); };
+  const h2hBackHomeBtn = document.getElementById("h2hBackHomeBtn");
+  if(h2hBackHomeBtn) h2hBackHomeBtn.onclick = ()=>{ h2h=null; h2hSeed=null; state=null; render(); };
 
   document.querySelectorAll(".tab").forEach(t=>{
     t.onclick = ()=>{ state.currentDay = parseInt(t.dataset.day); state.trayPark="home"; render(); };
@@ -2311,6 +2869,14 @@ function wireEvents(){
   };
   const declineTextBtn = document.getElementById("declineTextBtn");
   if(declineTextBtn) declineTextBtn.onclick = ()=>{ state.textResolved = true; render(); };
+  const negoReassureBtn = document.getElementById("negoReassureBtn");
+  if(negoReassureBtn) negoReassureBtn.onclick = ()=>{ state.negotiation.choice = "reassure"; state.negotiation.resolved = true; render(); };
+  const negoGoodwillBtn = document.getElementById("negoGoodwillBtn");
+  if(negoGoodwillBtn) negoGoodwillBtn.onclick = ()=>{ state.negotiation.choice = "goodwill"; state.negotiation.resolved = true; render(); };
+  const negoPromiseBtn = document.getElementById("negoPromiseBtn");
+  if(negoPromiseBtn) negoPromiseBtn.onclick = ()=>{ state.negotiation.choice = "promise"; state.negotiation.resolved = true; render(); };
+  const negoDismissBtn = document.getElementById("negoDismissBtn");
+  if(negoDismissBtn) negoDismissBtn.onclick = ()=>{ state.negotiation.resolved = true; render(); };
   document.querySelectorAll("[data-tray-park]").forEach(b=>{
     b.onclick = ()=>{ state.trayPark = b.dataset.trayPark; render(); };
   });
@@ -2358,20 +2924,21 @@ function wireEvents(){
       state.itemPickerType = data.kind;
       state.showItemPicker = true;
       render();
-      return;
+      return true;
     }
     if(data.kind==="travel"){
-      dropItem(state.currentDay, slotHour, {kind:"travel", label:data.label});
+      return dropItem(state.currentDay, slotHour, {kind:"travel", label:data.label});
     } else if(data.kind==="ride"){
       const ride = Object.values(RIDES).flat().find(r=>r.id===data.id);
-      dropItem(state.currentDay, slotHour, {kind:"ride", ride});
+      return dropItem(state.currentDay, slotHour, {kind:"ride", ride});
     } else {
       const rest = data.id==="hotel_qs" ? {id:"hotel_qs", name:"Hotel quick service", price:[13,16]} : Object.values(RESTAURANTS).flat().find(r=>r.id===data.id);
-      dropItem(state.currentDay, slotHour, {kind:"dining", restaurant:rest});
+      return dropItem(state.currentDay, slotHour, {kind:"dining", restaurant:rest});
     }
   }
 
   document.querySelectorAll(".card").forEach(card=>{
+    if(card.dataset.disabled==="true") return; // closed today — no drag/select wiring
     card.ondragstart = (e)=>{
       const label = card.querySelector(".name") ? card.querySelector(".name").textContent : "";
       e.dataTransfer.setData("text/plain", JSON.stringify({kind:card.dataset.kind, id:card.dataset.id, label}));
@@ -2417,8 +2984,8 @@ function wireEvents(){
     const placeHandler = ()=>{
       if(!state.selectedCard) return;
       const data = state.selectedCard;
-      state.selectedCard = null;
-      placeAtSlot(slot.dataset.slot, data);
+      const success = placeAtSlot(slot.dataset.slot, data);
+      if(success){ state.selectedCard = null; render(); }
     };
     slot.onclick = placeHandler;
     slot.onkeydown = (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); placeHandler(); } };
