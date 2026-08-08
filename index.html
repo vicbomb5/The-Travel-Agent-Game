@@ -292,7 +292,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp }
+  import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc, query, where, orderBy, limit, getDocs, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -336,6 +336,102 @@
     } catch(e){
       console.error("Firebase fetch error:", e);
       return { ok:false, error: e.message, rows: [] };
+    }
+  };
+
+  // ---- Daily Challenge ----
+  window.firebaseSubmitDailyChallenge = async function(entry){
+    try {
+      await addDoc(collection(db, "dailyChallengeScores"), {
+        date: String(entry.date),
+        playerName: String(entry.playerName||"Anonymous Agent").slice(0,30),
+        grade: String(entry.grade||"").slice(0,3),
+        score: Math.max(0, Math.min(100, Math.round(entry.score))),
+        submittedAt: serverTimestamp(),
+      });
+      return { ok:true };
+    } catch(e){
+      console.error("Firebase daily challenge submit error:", e);
+      return { ok:false, error: e.message };
+    }
+  };
+
+  window.firebaseGetDailyChallengeLeaderboard = async function(date){
+    try {
+      const q = query(collection(db, "dailyChallengeScores"), where("date","==",date));
+      const snap = await getDocs(q);
+      const rows = [];
+      snap.forEach(doc=> rows.push(doc.data()));
+      rows.sort((a,b)=>b.score-a.score);
+      return { ok:true, rows: rows.slice(0,25) };
+    } catch(e){
+      console.error("Firebase daily challenge fetch error:", e);
+      return { ok:false, error: e.message, rows: [] };
+    }
+  };
+
+  // ---- Online Head-to-Head ----
+  function randomRoomCode(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars (0/O, 1/I)
+    let out = "";
+    for(let i=0;i<5;i++) out += chars[Math.floor(Math.random()*chars.length)];
+    return out;
+  }
+
+  window.firebaseCreateH2HRoom = async function(clientSeedJson, hostName){
+    try {
+      const code = randomRoomCode();
+      await setDoc(doc(db, "h2hRooms", code), {
+        createdAt: serverTimestamp(),
+        clientSeed: clientSeedJson,
+        hostName: String(hostName||"Agent 1").slice(0,30),
+        guestName: null,
+        hostReport: null,
+        guestReport: null,
+      });
+      return { ok:true, code };
+    } catch(e){
+      console.error("Firebase create room error:", e);
+      return { ok:false, error: e.message };
+    }
+  };
+
+  window.firebaseJoinH2HRoom = async function(code, guestName){
+    try {
+      const ref = doc(db, "h2hRooms", code.toUpperCase().trim());
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return { ok:false, error:"Room not found — double check the code." };
+      const data = snap.data();
+      if(!data.guestName){
+        await updateDoc(ref, { guestName: String(guestName||"Agent 2").slice(0,30) });
+      }
+      return { ok:true, clientSeed: data.clientSeed, hostName: data.hostName };
+    } catch(e){
+      console.error("Firebase join room error:", e);
+      return { ok:false, error: e.message };
+    }
+  };
+
+  window.firebaseSubmitH2HReport = async function(code, role, report){
+    try {
+      const ref = doc(db, "h2hRooms", code.toUpperCase().trim());
+      await updateDoc(ref, { [role+"Report"]: report });
+      return { ok:true };
+    } catch(e){
+      console.error("Firebase submit H2H report error:", e);
+      return { ok:false, error: e.message };
+    }
+  };
+
+  window.firebaseGetH2HRoom = async function(code){
+    try {
+      const ref = doc(db, "h2hRooms", code.toUpperCase().trim());
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return { ok:false, error:"Room not found — double check the code." };
+      return { ok:true, data: snap.data() };
+    } catch(e){
+      console.error("Firebase get room error:", e);
+      return { ok:false, error: e.message };
     }
   };
 </script>
@@ -818,6 +914,46 @@ function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function fmtMoney(n){ return "$" + Math.round(n).toLocaleString(); }
 
+// ---- Daily Challenge: deterministic client generation ----
+// Every random call in the game ultimately goes through Math.random(). To give every
+// player the exact same client on the exact same day, we temporarily swap Math.random
+// itself for a seeded generator (seeded from today's date) while building the trip,
+// then restore true randomness immediately after. Nothing else needs to change.
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hashStringToSeed(str){
+  let h = 1779033703 ^ str.length;
+  for(let i=0;i<str.length;i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return (h ^ (h >>> 16)) >>> 0;
+}
+function todayDateString(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function startDailyChallenge(){
+  const dateStr = todayDateString();
+  const seed = hashStringToSeed("sunshineco-daily-"+dateStr);
+  const seededRng = mulberry32(seed);
+  const originalRandom = Math.random;
+  Math.random = seededRng;
+  try {
+    newGame();
+    state.isDailyChallenge = true;
+    state.dailyChallengeDate = dateStr;
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
 /* ============================================================
    SOUND ENGINE
    No audio files are bundled with this single-file app, so SFX and
@@ -1076,6 +1212,12 @@ let showStatsHistory = false;
 let showLeaderboard = false;
 let playerName = (function(){ try { return localStorage.getItem('sunshineco_playerName') || ""; } catch(e){ return ""; } })();
 let leaderboardState = { loading:false, error:null, rows:null };
+let showDailyLeaderboard = false;
+let dailyLeaderboardState = { loading:false, error:null, rows:null };
+// Online head-to-head: persists across the "create/join room -> book independently -> submit -> compare" flow.
+let onlineH2H = null; // { code, role:'host'|'guest', opponentName, submitted:false }
+let onlineH2HUi = { mode:null, joinCode:"", status:null }; // transient UI state for the home-screen create/join panel
+let onlineH2HCompare = { loading:false, error:null, data:null }; // result of checking a room's status
 let pendingCoop = { enabled:false, agent1:"", agent2:"" }; // set on the client screen, attached to trip state on Start Planning
 let pendingH2H = { enabled:false, agent1:"", agent2:"" }; // head-to-head: same client, two separate itineraries, compared at the end
 let h2h = null; // { agent1, agent2, phase:1|2, agent1Report } — active only during a head-to-head run
@@ -1320,6 +1462,7 @@ function newGame(coopNames){
     ]),
     negotiation: { triggered:false, resolved:false, concernType:null, choice:null, missingTag:null },
     leaderboardSubmitted:false, leaderboardSubmitMsg:null,
+    isDailyChallenge:false, dailyChallengeDate:null, dailySubmitted:false, dailySubmitMsg:null,
     coop: coopNames ? { agent1:coopNames.agent1||"Agent 1", agent2:coopNames.agent2||"Agent 2", turn:1 } : null,
     currentDay:1,
     view:"client",
@@ -1800,6 +1943,85 @@ function loadLeaderboard(){
   });
 }
 
+function loadDailyLeaderboard(){
+  dailyLeaderboardState = { loading:true, error:null, rows:dailyLeaderboardState.rows };
+  render();
+  if(!window.firebaseGetDailyChallengeLeaderboard){
+    dailyLeaderboardState = { loading:false, error:"leaderboard not connected", rows:dailyLeaderboardState.rows||[] };
+    render();
+    return;
+  }
+  window.firebaseGetDailyChallengeLeaderboard(todayDateString()).then(res=>{
+    dailyLeaderboardState = res.ok
+      ? { loading:false, error:null, rows:res.rows }
+      : { loading:false, error:res.error||"unknown error", rows:dailyLeaderboardState.rows };
+    render();
+  }).catch(e=>{
+    dailyLeaderboardState = { loading:false, error:e.message, rows:dailyLeaderboardState.rows };
+    render();
+  });
+}
+
+function createOnlineRoom(){
+  if(!window.firebaseCreateH2HRoom){
+    onlineH2HUi.status = "Couldn't connect to the server right now.";
+    render(); return;
+  }
+  onlineH2HUi.status = "Creating room…";
+  render();
+  newGame(); // builds a fresh client + trip state, same as any normal trip
+  const seedJson = JSON.stringify(state);
+  window.firebaseCreateH2HRoom(seedJson, playerName || "Agent 1").then(res=>{
+    if(res.ok){
+      onlineH2H = { code:res.code, role:"host", opponentName:null, submitted:false };
+      onlineH2HUi = { mode:null, joinCode:"", status:null };
+    } else {
+      onlineH2HUi.status = "Couldn't create a room — try again.";
+    }
+    render();
+  }).catch(()=>{ onlineH2HUi.status = "Couldn't create a room — try again."; render(); });
+}
+
+function joinOnlineRoom(code){
+  if(!code || !code.trim()){ onlineH2HUi.status = "Enter a room code first."; render(); return; }
+  if(!window.firebaseJoinH2HRoom){
+    onlineH2HUi.status = "Couldn't connect to the server right now.";
+    render(); return;
+  }
+  onlineH2HUi.status = "Joining room…";
+  render();
+  window.firebaseJoinH2HRoom(code, playerName || "Agent 2").then(res=>{
+    if(res.ok){
+      try {
+        state = JSON.parse(res.clientSeed);
+      } catch(e){
+        onlineH2HUi.status = "That room's data looked corrupted — ask your friend to make a new one.";
+        render(); return;
+      }
+      onlineH2H = { code:code.toUpperCase().trim(), role:"guest", opponentName:res.hostName, submitted:false };
+      onlineH2HUi = { mode:null, joinCode:"", status:null };
+    } else {
+      onlineH2HUi.status = res.error || "Couldn't join that room.";
+    }
+    render();
+  }).catch(()=>{ onlineH2HUi.status = "Couldn't join that room."; render(); });
+}
+
+function checkOnlineRoom(code){
+  if(!window.firebaseGetH2HRoom){
+    onlineH2HCompare = { loading:false, error:"leaderboard not connected", data:null };
+    render(); return;
+  }
+  onlineH2HCompare = { loading:true, error:null, data:null };
+  render();
+  window.firebaseGetH2HRoom(code).then(res=>{
+    onlineH2HCompare = res.ok
+      ? { loading:false, error:null, data:res.data }
+      : { loading:false, error:res.error||"unknown error", data:null };
+    render();
+  }).catch(e=>{ onlineH2HCompare = { loading:false, error:e.message, data:null }; render(); });
+}
+
 function renderLeaderboard(){
   return `
     <div class="overlay" id="leaderboardOverlay">
@@ -1823,6 +2045,34 @@ function renderLeaderboard(){
         <div style="margin-top:18px;display:flex;justify-content:space-between;gap:10px;">
           <button class="btn secondary" id="refreshLeaderboard">🔄 Refresh</button>
           <button class="btn" id="closeLeaderboard">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDailyLeaderboard(){
+  return `
+    <div class="overlay" id="dailyLeaderboardOverlay">
+      <div class="drawer" style="width:600px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">☀️ Today's Challenge Leaderboard</h3>
+        <p class="sans" style="font-size:12px;color:#8a8267;margin-top:2px;">Everyone's scores for today's shared client — resets tomorrow.</p>
+        ${dailyLeaderboardState.loading ? `<p class="sans" style="font-size:13px;color:#8a8267;margin-top:14px;">Loading scores…</p>` : ""}
+        ${dailyLeaderboardState.error ? `<p class="sans" style="font-size:13px;color:var(--rust);margin-top:14px;">Couldn't load the leaderboard right now (${dailyLeaderboardState.error}). Check your connection and try again.</p>` : ""}
+        ${(!dailyLeaderboardState.loading && !dailyLeaderboardState.error && dailyLeaderboardState.rows) ? (
+          dailyLeaderboardState.rows.length===0
+            ? `<p class="sans" style="font-size:13px;color:#8a8267;margin-top:14px;">No one's submitted a score for today's challenge yet — be the first!</p>`
+            : dailyLeaderboardState.rows.map((row,i)=>`
+              <div class="log-row">
+                <span class="log-rank">#${i+1}</span>
+                <span class="log-name">${row.playerName||"Anonymous Agent"}</span>
+                <span class="log-grade">${row.grade||''}</span>
+                <span class="log-score">${row.score}/100</span>
+              </div>`).join("")
+        ) : ""}
+        <div style="margin-top:18px;display:flex;justify-content:space-between;gap:10px;">
+          <button class="btn secondary" id="refreshDailyLeaderboard">🔄 Refresh</button>
+          <button class="btn" id="closeDailyLeaderboard">Close</button>
         </div>
       </div>
     </div>
@@ -1912,6 +2162,58 @@ function renderHome(){
       <div style="margin-top:10px;"><button class="btn secondary" id="openLeaderboard" style="font-size:11.5px;padding:7px 14px;">🌍 View global leaderboard</button></div>
     </div>
     <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>☀️ Today's Challenge</h3>
+      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Everyone playing today gets the exact same client — see who plans it best.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn" id="playDailyChallenge" style="font-size:12.5px;padding:9px 16px;">Play Today's Challenge</button>
+        <button class="btn secondary" id="openDailyLeaderboard" style="font-size:12.5px;padding:9px 16px;">🏆 Today's leaderboard</button>
+      </div>
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>🌐 Online Head-to-Head</h3>
+      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Same client, two devices — book independently, then compare results.</p>
+      ${onlineH2H ? `
+        <div class="sans" style="font-size:12.5px;background:var(--teal-light);border:1px solid var(--teal);border-radius:8px;padding:10px 12px;">
+          ${onlineH2H.role==="host"
+            ? `Room code: <b style="letter-spacing:1px;">${onlineH2H.code}</b> — share this with your opponent.`
+            : `You joined ${onlineH2H.opponentName}'s room: <b style="letter-spacing:1px;">${onlineH2H.code}</b>`}
+          <div style="margin-top:8px;">Book your trip from "Start booking clients" below, then come back here and check results once you're both done.</div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn secondary" id="checkOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">🔄 Check results</button>
+          <button class="btn secondary" id="leaveOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">Leave room</button>
+        </div>
+        ${onlineH2HCompare.loading ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Checking…</p>` : ""}
+        ${onlineH2HCompare.error ? `<p class="sans" style="font-size:12px;color:var(--rust);margin-top:8px;">${onlineH2HCompare.error}</p>` : ""}
+        ${(!onlineH2HCompare.loading && onlineH2HCompare.data) ? (function(){
+          const d = onlineH2HCompare.data;
+          const bothDone = d.hostReport && d.guestReport;
+          if(!d.guestName) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Still waiting for someone to join with the code.</p>`;
+          if(!bothDone) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Waiting on ${!d.hostReport?d.hostName:d.guestName} to finish their trip.</p>`;
+          const winner = d.hostReport.final===d.guestReport.final ? null : (d.hostReport.final>d.guestReport.final ? d.hostName : d.guestName);
+          return `
+            <div class="sans" style="margin-top:10px;font-size:12.5px;">
+              <b>${winner ? `🏆 ${winner} wins!` : "🤝 It's a tie!"}</b>
+              <div class="client-row" style="margin-top:8px;">
+                <div><b>${d.hostName}</b>${d.hostReport.grade} — ${d.hostReport.final}/100</div>
+                <div><b>${d.guestName}</b>${d.guestReport.grade} — ${d.guestReport.final}/100</div>
+              </div>
+            </div>`;
+        })() : ""}
+      ` : `
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn" id="showCreateRoomBtn" style="font-size:12.5px;padding:9px 16px;">Create a room</button>
+          <button class="btn secondary" id="showJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join a room</button>
+        </div>
+        ${onlineH2HUi.mode==="join" ? `
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <input type="text" id="joinRoomCodeInput" placeholder="Room code" value="${onlineH2HUi.joinCode}" maxlength="5" style="flex:1;max-width:180px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:13px;text-transform:uppercase;">
+          <button class="btn" id="confirmJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join</button>
+        </div>` : ""}
+        ${onlineH2HUi.status ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">${onlineH2HUi.status}</p>` : ""}
+      `}
+    </div>
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
       <h3>Difficulty</h3>
       <div class="tray-filter" style="margin-bottom:8px;">
         ${Object.keys(DIFFICULTY).map(k=>`<button data-difficulty="${k}" class="${difficulty===k?'on':''}">${DIFFICULTY[k].label}</button>`).join("")}
@@ -1931,6 +2233,7 @@ function renderHome(){
     ${showAchievementGallery ? renderAchievementGallery() : ""}
     ${showStatsHistory ? renderStatsHistory() : ""}
     ${showLeaderboard ? renderLeaderboard() : ""}
+    ${showDailyLeaderboard ? renderDailyLeaderboard() : ""}
     <div class="home-panels">
       <div class="home-panel">
         <h3>Credits</h3>
@@ -2625,6 +2928,16 @@ function renderReportScreen(){
         <button class="btn secondary" id="submitLeaderboardBtn" ${state.leaderboardSubmitted?'disabled':''} style="font-size:12.5px;padding:9px 16px;">${state.leaderboardSubmitted?'✅ Submitted to leaderboard':'🌍 Submit to global leaderboard'}</button>
         ${state.leaderboardSubmitMsg ? `<span class="sans" style="font-size:11.5px;color:${state.leaderboardSubmitMsg.startsWith('Couldn')?'var(--rust)':'var(--teal-dark)'};">${state.leaderboardSubmitMsg}</span>` : ''}
       </div>
+      ${state.isDailyChallenge ? `
+      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn secondary" id="submitDailyBtn" ${state.dailySubmitted?'disabled':''} style="font-size:12.5px;padding:9px 16px;">${state.dailySubmitted?"✅ Submitted to today's challenge":"☀️ Submit to today's challenge"}</button>
+        ${state.dailySubmitMsg ? `<span class="sans" style="font-size:11.5px;color:${state.dailySubmitMsg.startsWith('Couldn')?'var(--rust)':'var(--teal-dark)'};">${state.dailySubmitMsg}</span>` : ''}
+      </div>` : ''}
+      ${onlineH2H ? `
+      <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn secondary" id="submitOnlineH2HBtn" ${onlineH2H.submitted?'disabled':''} style="font-size:12.5px;padding:9px 16px;">${onlineH2H.submitted?'✅ Result submitted':'🌐 Submit head-to-head result'}</button>
+        ${onlineH2HUi.status ? `<span class="sans" style="font-size:11.5px;color:#5b5646;">${onlineH2HUi.status}</span>` : ''}
+      </div>` : ''}
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         ${h2h && h2h.phase===1
           ? `<button class="btn" id="h2hHandoffBtn">🆚 Hand off to ${h2h.agent2} →</button>`
@@ -2733,6 +3046,26 @@ function wireEvents(){
     playerName = e.target.value;
     try { localStorage.setItem('sunshineco_playerName', playerName); } catch(err){}
   };
+  const playDailyChallenge = document.getElementById("playDailyChallenge");
+  if(playDailyChallenge) playDailyChallenge.onclick = ()=>{ startDailyChallenge(); };
+  const openDailyLeaderboard = document.getElementById("openDailyLeaderboard");
+  if(openDailyLeaderboard) openDailyLeaderboard.onclick = ()=>{ showDailyLeaderboard = true; loadDailyLeaderboard(); };
+  const closeDailyLeaderboard = document.getElementById("closeDailyLeaderboard");
+  if(closeDailyLeaderboard) closeDailyLeaderboard.onclick = ()=>{ showDailyLeaderboard = false; render(); };
+  const refreshDailyLeaderboard = document.getElementById("refreshDailyLeaderboard");
+  if(refreshDailyLeaderboard) refreshDailyLeaderboard.onclick = ()=>{ loadDailyLeaderboard(); };
+  const showCreateRoomBtn = document.getElementById("showCreateRoomBtn");
+  if(showCreateRoomBtn) showCreateRoomBtn.onclick = ()=>{ createOnlineRoom(); };
+  const showJoinRoomBtn = document.getElementById("showJoinRoomBtn");
+  if(showJoinRoomBtn) showJoinRoomBtn.onclick = ()=>{ onlineH2HUi.mode = "join"; render(); };
+  const joinRoomCodeInput = document.getElementById("joinRoomCodeInput");
+  if(joinRoomCodeInput) joinRoomCodeInput.oninput = (e)=>{ onlineH2HUi.joinCode = e.target.value.toUpperCase(); };
+  const confirmJoinRoomBtn = document.getElementById("confirmJoinRoomBtn");
+  if(confirmJoinRoomBtn) confirmJoinRoomBtn.onclick = ()=>{ joinOnlineRoom(onlineH2HUi.joinCode); };
+  const checkOnlineRoomBtn = document.getElementById("checkOnlineRoomBtn");
+  if(checkOnlineRoomBtn) checkOnlineRoomBtn.onclick = ()=>{ checkOnlineRoom(onlineH2H.code); };
+  const leaveOnlineRoomBtn = document.getElementById("leaveOnlineRoomBtn");
+  if(leaveOnlineRoomBtn) leaveOnlineRoomBtn.onclick = ()=>{ onlineH2H = null; onlineH2HCompare = { loading:false, error:null, data:null }; render(); };
   document.querySelectorAll("[data-item-choice]").forEach(b=>{
     b.onclick = ()=>{
       const list = getPickerList();
@@ -2808,6 +3141,53 @@ function wireEvents(){
       render();
     }).catch(()=>{
       state.leaderboardSubmitMsg = "Couldn't submit — try again in a moment.";
+      render();
+    });
+  };
+  const submitDailyBtn = document.getElementById("submitDailyBtn");
+  if(submitDailyBtn) submitDailyBtn.onclick = ()=>{
+    if(!window.firebaseSubmitDailyChallenge){
+      state.dailySubmitMsg = "Couldn't connect to the leaderboard right now.";
+      render(); return;
+    }
+    state.dailySubmitMsg = "Submitting…";
+    render();
+    window.firebaseSubmitDailyChallenge({
+      date: state.dailyChallengeDate,
+      playerName: playerName || "Anonymous Agent",
+      grade: lastReportData.grade,
+      score: lastReportData.final,
+    }).then(res=>{
+      if(res.ok){ state.dailySubmitted = true; state.dailySubmitMsg = "Submitted! Check today's leaderboard from the home screen."; }
+      else { state.dailySubmitMsg = "Couldn't submit — try again in a moment."; }
+      render();
+    }).catch(()=>{
+      state.dailySubmitMsg = "Couldn't submit — try again in a moment.";
+      render();
+    });
+  };
+  const submitOnlineH2HBtn = document.getElementById("submitOnlineH2HBtn");
+  if(submitOnlineH2HBtn) submitOnlineH2HBtn.onclick = ()=>{
+    if(!window.firebaseSubmitH2HReport){
+      onlineH2HUi.status = "Couldn't connect to the server right now.";
+      render(); return;
+    }
+    onlineH2HUi.status = "Submitting…";
+    render();
+    window.firebaseSubmitH2HReport(onlineH2H.code, onlineH2H.role, {
+      name: playerName || (onlineH2H.role==="host" ? "Agent 1" : "Agent 2"),
+      grade: lastReportData.grade,
+      final: lastReportData.final,
+      budgetScore: lastReportData.budgetScore,
+      valueScore: lastReportData.valueScore,
+      prefScore: lastReportData.prefScore,
+      effScore: lastReportData.effScore,
+    }).then(res=>{
+      if(res.ok){ onlineH2H.submitted = true; onlineH2HUi.status = "Submitted! Check results from the home screen."; }
+      else { onlineH2HUi.status = "Couldn't submit — try again in a moment."; }
+      render();
+    }).catch(()=>{
+      onlineH2HUi.status = "Couldn't submit — try again in a moment.";
       render();
     });
   };
