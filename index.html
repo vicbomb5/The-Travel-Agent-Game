@@ -1268,6 +1268,9 @@ let dailyLeaderboardState = { loading:false, error:null, rows:null };
 let onlineH2H = null; // { code, role:'host'|'guest', opponentName, submitted:false }
 let onlineH2HUi = { mode:null, joinCode:"", status:null }; // transient UI state for the home-screen create/join panel
 let onlineH2HCompare = { loading:false, error:null, data:null }; // result of checking a room's status
+let showOnlineH2HPanel = false;
+let showThemesPanel = false;
+let showSettingsPanel = false;
 let pendingCoop = { enabled:false, agent1:"", agent2:"" }; // set on the client screen, attached to trip state on Start Planning
 let pendingH2H = { enabled:false, agent1:"", agent2:"" }; // head-to-head: same client, two separate itineraries, compared at the end
 let h2h = null; // { agent1, agent2, phase:1|2, agent1Report } — active only during a head-to-head run
@@ -2192,174 +2195,177 @@ function renderHome(){
       <h1 class="shimmer-text">Welcome, Agent.</h1>
       <div class="sub">Book real families onto their dream Disney World trip — on budget, on brand, on time.</div>
     </div>
-    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
-      <h3>Career progress</h3>
-      <div class="bar-row">
-        <div class="label"><span><b>${careerTitle()}</b> · Level ${career.level+1}</span><span>${career.tripsCompleted} trips booked</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${xpPct}%"></div></div>
+
+    <div class="home-panel" style="max-width:760px;margin:0 auto 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div style="flex:2;min-width:220px;">
+          <div class="bar-row" style="margin-bottom:0;">
+            <div class="label"><span><b>${careerTitle()}</b> · Level ${career.level+1}</span><span>${career.tripsCompleted} trips booked</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${xpPct}%"></div></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <input type="text" id="playerNameInput" placeholder="Your agent name" value="${playerName}" maxlength="30" style="width:100%;padding:8px 11px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:12.5px;">
+        </div>
       </div>
-      <p style="margin-top:8px;font-size:11.5px;color:#8a8267;">
-        ${career.level>=3 ? `You've earned a 4th Lightning Lane slot per day. ` : `Reach level 4 to unlock a 4th daily Lightning Lane slot. `}
-        Higher-level agents also get bigger client budgets and see more rare bookings.
-      </p>
-      ${isMaxLevel() ? `<p style="margin-top:10px;font-size:11.5px;color:var(--rust);background:var(--rust-light);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      ${isMaxLevel() ? `<p style="margin-top:12px;font-size:11.5px;color:var(--rust);background:var(--rust-light);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
         <span>⭐ You've maxed out as ${CAREER_TITLES[CAREER_TITLES.length-1]}. Prestige to reset your level for a permanent +5% budget bonus.</span>
         <button class="btn secondary" id="prestigeBtn" style="white-space:nowrap;">Prestige</button>
       </p>` : ''}
-      <p style="margin-top:10px;font-size:11px;color:#8a8267;display:flex;justify-content:space-between;align-items:center;">
-        <span>💾 Progress auto-saves in this browser after every trip — no account needed.</span>
-        <button class="btn secondary" id="resetSaveBtn" style="font-size:10.5px;padding:5px 10px;white-space:nowrap;margin-left:10px;">Reset save</button>
-      </p>
+      ${(currentDisplayStreak()>0 || yesterdayWinnerState.entry) ? `<p style="margin-top:10px;font-size:11.5px;color:#8a8267;">
+        ${currentDisplayStreak()>0 ? `🔥 ${currentDisplayStreak()}-day challenge streak` : ''}${(currentDisplayStreak()>0 && yesterdayWinnerState.entry) ? ' · ' : ''}${yesterdayWinnerState.entry ? `🏆 Yesterday's winner: <b>${yesterdayWinnerState.entry.playerName||"Anonymous Agent"}</b> (${yesterdayWinnerState.entry.score}/100)` : ''}
+      </p>` : ''}
     </div>
-    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
-      <h3>Your agent name</h3>
-      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Used to tag your scores on the global leaderboard.</p>
-      <input type="text" id="playerNameInput" placeholder="Your agent name" value="${playerName}" maxlength="30" style="width:100%;max-width:320px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:13px;">
-      <div style="margin-top:10px;"><button class="btn secondary" id="openLeaderboard" style="font-size:11.5px;padding:7px 14px;">🌍 View global leaderboard</button></div>
-    </div>
-    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
-      <h3>☀️ Today's Challenge</h3>
-      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Everyone playing today gets the exact same client — see who plans it best.</p>
-      ${currentDisplayStreak()>0 ? `<p class="sans" style="font-size:12.5px;color:var(--teal-dark);font-weight:600;margin-bottom:6px;">🔥 ${currentDisplayStreak()}-day streak — play today to keep it going!</p>` : ''}
-      ${yesterdayWinnerState.entry ? `<p class="sans" style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">🏆 Yesterday's winner: <b>${yesterdayWinnerState.entry.playerName||"Anonymous Agent"}</b> — ${yesterdayWinnerState.entry.score}/100</p>` : (yesterdayWinnerState.fetchedFor===todayDateString() && !yesterdayWinnerState.loading ? `<p class="sans" style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">No one played yesterday's challenge.</p>` : '')}
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn" id="playDailyChallenge" style="font-size:12.5px;padding:9px 16px;">Play Today's Challenge</button>
-        <button class="btn secondary" id="openDailyLeaderboard" style="font-size:12.5px;padding:9px 16px;">🏆 Today's leaderboard</button>
-      </div>
-    </div>
-    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
-      <h3>🌐 Online Head-to-Head</h3>
-      <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Same client, two devices — book independently, then compare results.</p>
-      ${onlineH2H ? `
-        <div class="sans" style="font-size:12.5px;background:var(--teal-light);border:1px solid var(--teal);border-radius:8px;padding:10px 12px;">
-          ${onlineH2H.role==="host"
-            ? `Room code: <b style="letter-spacing:1px;">${onlineH2H.code}</b> — share this with your opponent.`
-            : `You joined ${onlineH2H.opponentName}'s room: <b style="letter-spacing:1px;">${onlineH2H.code}</b>`}
-          <div style="margin-top:8px;">Book your trip from "Start booking clients" below, then come back here and check results once you're both done.</div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn secondary" id="checkOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">🔄 Check results</button>
-          <button class="btn secondary" id="leaveOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">Leave room</button>
-        </div>
-        ${onlineH2HCompare.loading ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Checking…</p>` : ""}
-        ${onlineH2HCompare.error ? `<p class="sans" style="font-size:12px;color:var(--rust);margin-top:8px;">${onlineH2HCompare.error}</p>` : ""}
-        ${(!onlineH2HCompare.loading && onlineH2HCompare.data) ? (function(){
-          const d = onlineH2HCompare.data;
-          const bothDone = d.hostReport && d.guestReport;
-          if(!d.guestName) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Still waiting for someone to join with the code.</p>`;
-          if(!bothDone) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Waiting on ${!d.hostReport?d.hostName:d.guestName} to finish their trip.</p>`;
-          const winner = d.hostReport.final===d.guestReport.final ? null : (d.hostReport.final>d.guestReport.final ? d.hostName : d.guestName);
-          return `
-            <div class="sans" style="margin-top:10px;font-size:12.5px;">
-              <b>${winner ? `🏆 ${winner} wins!` : "🤝 It's a tie!"}</b>
-              <div class="client-row" style="margin-top:8px;">
-                <div><b>${d.hostName}</b>${d.hostReport.grade} — ${d.hostReport.final}/100</div>
-                <div><b>${d.guestName}</b>${d.guestReport.grade} — ${d.guestReport.final}/100</div>
-              </div>
-            </div>`;
-        })() : ""}
-      ` : `
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn" id="showCreateRoomBtn" style="font-size:12.5px;padding:9px 16px;">Create a room</button>
-          <button class="btn secondary" id="showJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join a room</button>
-        </div>
-        ${onlineH2HUi.mode==="join" ? `
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <input type="text" id="joinRoomCodeInput" placeholder="Room code" value="${onlineH2HUi.joinCode}" maxlength="5" style="flex:1;max-width:180px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:13px;text-transform:uppercase;">
-          <button class="btn" id="confirmJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join</button>
-        </div>` : ""}
-        ${onlineH2HUi.status ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">${onlineH2HUi.status}</p>` : ""}
-      `}
-    </div>
-    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
-      <h3>Difficulty</h3>
-      <div class="tray-filter" style="margin-bottom:8px;">
+
+    <div class="home-panel" style="max-width:760px;margin:0 auto 16px;">
+      <h3>Ready to book?</h3>
+      <div class="tray-filter" style="margin:10px 0;">
         ${Object.keys(DIFFICULTY).map(k=>`<button data-difficulty="${k}" class="${difficulty===k?'on':''}">${DIFFICULTY[k].label}</button>`).join("")}
       </div>
-      <p style="font-size:11.5px;color:#8a8267;">
-        ${difficulty==="easy" ? "Bigger budgets, no forced tough archetypes." :
-          difficulty==="hard" ? "Tighter budgets, biased toward multi-generation clients, one extra dealbreaker." :
-          "The standard experience."}
-      </p>
+      <button class="btn" id="startBooking" style="width:100%;font-size:15px;padding:14px;">Start booking clients</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn secondary" id="playDailyChallenge" style="flex:1;min-width:200px;font-size:12.5px;padding:10px 14px;">☀️ Today's Challenge${currentDisplayStreak()>0?` (🔥${currentDisplayStreak()})`:''}</button>
+        <button class="btn secondary" id="openOnlineH2HPanel" style="flex:1;min-width:200px;font-size:12.5px;padding:10px 14px;">🌐 Online Head-to-Head${onlineH2H?' (active room)':''}</button>
+      </div>
     </div>
-    <div class="home-actions">
-      <button class="btn" id="startBooking">Start booking clients</button>
-      <div style="margin-top:12px;"><button class="btn secondary" id="howToPlayBtn" style="font-size:12px;padding:8px 16px;">❓ How to Play</button></div>
+
+    <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
+      <h3>More</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <button class="btn secondary" id="openLeaderboard" style="font-size:12px;padding:8px 14px;">🌍 Global Leaderboard</button>
+        <button class="btn secondary" id="openDailyLeaderboard" style="font-size:12px;padding:8px 14px;">☀️ Today's Leaderboard</button>
+        <button class="btn secondary" id="openStatsHistory" style="font-size:12px;padding:8px 14px;">📊 Stats &amp; History</button>
+        <button class="btn secondary" id="openAchievementGallery" style="font-size:12px;padding:8px 14px;">🏆 Achievements (${unlockedAchievements.size}/${ACHIEVEMENTS.length})</button>
+        <button class="btn secondary" id="openThemesPanel" style="font-size:12px;padding:8px 14px;">🎨 Themes</button>
+        <button class="btn secondary" id="openSettingsPanel" style="font-size:12px;padding:8px 14px;">⚙️ Settings</button>
+        <button class="btn secondary" id="howToPlayBtn" style="font-size:12px;padding:8px 14px;">❓ How to Play</button>
+      </div>
     </div>
+
     ${showOnboarding ? renderOnboardingOverlay() : ""}
     ${showResetConfirm ? renderResetConfirmModal() : ""}
     ${showAchievementGallery ? renderAchievementGallery() : ""}
     ${showStatsHistory ? renderStatsHistory() : ""}
     ${showLeaderboard ? renderLeaderboard() : ""}
     ${showDailyLeaderboard ? renderDailyLeaderboard() : ""}
-    <div class="home-panels">
-      <div class="home-panel">
-        <h3>Credits</h3>
-        <p><b>Designed &amp; built by:</b> you, with Claude (Anthropic) as coding partner.</p>
-        <p>All ride, hotel, and restaurant names belong to Disney and are used here purely for a personal, non-commercial fan-made planning game. Pricing is illustrative and approximate, not official.</p>
-        <p>Sound effects and music are generated live in your browser — no external files, nothing to download.</p>
-      </div>
-      <div class="home-panel">
-        <h3>Sound settings</h3>
-        <div class="sound-row">
-          <label><input type="checkbox" id="sfxToggle" ${sound.sfxOn?'checked':''}> Sound effects</label>
-        </div>
-        <div class="sound-row">
-          <label><input type="checkbox" id="musicToggle" ${sound.musicOn?'checked':''}> Background music</label>
-        </div>
-        <div class="sound-row">
-          <label>Volume</label>
-          <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="${sound.volume}">
-        </div>
-        <p style="margin-top:14px;">Want to swap in your own music or sound effects? Open this file in a text editor, find <code>MUSIC_FILE_PATH</code> and <code>SFX_FILES</code> near the top of the script, and point them at your own mp3 files sitting in the same folder as this HTML file.</p>
+    ${showOnlineH2HPanel ? renderOnlineH2HOverlay() : ""}
+    ${showThemesPanel ? renderThemesOverlay() : ""}
+    ${showSettingsPanel ? renderSettingsOverlay() : ""}
+  `;
+}
+
+function renderOnlineH2HOverlay(){
+  return `
+    <div class="overlay" id="onlineH2HOverlay">
+      <div class="drawer" style="width:520px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">🌐 Online Head-to-Head</h3>
+        <p class="sans" style="font-size:12px;color:#8a8267;margin-top:2px;">Same client, two devices — book independently, then compare results.</p>
+        ${onlineH2H ? `
+          <div class="sans" style="font-size:12.5px;background:var(--teal-light);border:1px solid var(--teal);border-radius:8px;padding:10px 12px;margin-top:12px;">
+            ${onlineH2H.role==="host"
+              ? `Room code: <b style="letter-spacing:1px;">${onlineH2H.code}</b> — share this with your opponent.`
+              : `You joined ${onlineH2H.opponentName}'s room: <b style="letter-spacing:1px;">${onlineH2H.code}</b>`}
+            <div style="margin-top:8px;">Book your trip from "Start booking clients" on the home screen, then come back here and check results once you're both done.</div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn secondary" id="checkOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">🔄 Check results</button>
+            <button class="btn secondary" id="leaveOnlineRoomBtn" style="font-size:12px;padding:8px 14px;">Leave room</button>
+          </div>
+          ${onlineH2HCompare.loading ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Checking…</p>` : ""}
+          ${onlineH2HCompare.error ? `<p class="sans" style="font-size:12px;color:var(--rust);margin-top:8px;">${onlineH2HCompare.error}</p>` : ""}
+          ${(!onlineH2HCompare.loading && onlineH2HCompare.data) ? (function(){
+            const d = onlineH2HCompare.data;
+            const bothDone = d.hostReport && d.guestReport;
+            if(!d.guestName) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Still waiting for someone to join with the code.</p>`;
+            if(!bothDone) return `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">Waiting on ${!d.hostReport?d.hostName:d.guestName} to finish their trip.</p>`;
+            const winner = d.hostReport.final===d.guestReport.final ? null : (d.hostReport.final>d.guestReport.final ? d.hostName : d.guestName);
+            return `
+              <div class="sans" style="margin-top:10px;font-size:12.5px;">
+                <b>${winner ? `🏆 ${winner} wins!` : "🤝 It's a tie!"}</b>
+                <div class="client-row" style="margin-top:8px;">
+                  <div><b>${d.hostName}</b>${d.hostReport.grade} — ${d.hostReport.final}/100</div>
+                  <div><b>${d.guestName}</b>${d.guestReport.grade} — ${d.guestReport.final}/100</div>
+                </div>
+              </div>`;
+          })() : ""}
+        ` : `
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn" id="showCreateRoomBtn" style="font-size:12.5px;padding:9px 16px;">Create a room</button>
+            <button class="btn secondary" id="showJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join a room</button>
+          </div>
+          ${onlineH2HUi.mode==="join" ? `
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <input type="text" id="joinRoomCodeInput" placeholder="Room code" value="${onlineH2HUi.joinCode}" maxlength="5" style="flex:1;max-width:180px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);font-family:var(--sans);font-size:13px;text-transform:uppercase;">
+            <button class="btn" id="confirmJoinRoomBtn" style="font-size:12.5px;padding:9px 16px;">Join</button>
+          </div>` : ""}
+          ${onlineH2HUi.status ? `<p class="sans" style="font-size:12px;color:#8a8267;margin-top:8px;">${onlineH2HUi.status}</p>` : ""}
+        `}
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeOnlineH2HPanel">Close</button></div>
       </div>
     </div>
-    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
-      <h3>Achievements (${unlockedAchievements.size}/${ACHIEVEMENTS.length})</h3>
-      <div class="pill-list">
-        ${ACHIEVEMENTS.map(a=>{
-          const done = unlockedAchievements.has(a.id);
-          if(a.hidden && !done) return `<span class="pill avoid" title="Mystery achievement — keep playing to discover it.">🌫️ ???</span>`;
-          const icon = done ? (a.hidden ? '🌟' : '🏆') : '🔒';
-          const title = done && a.bonusXp ? `${a.desc} (+${a.bonusXp} XP bonus)` : a.desc;
-          return `<span class="pill ${done?'want':'avoid'}" title="${title}">${icon} ${a.label}</span>`;
-        }).join("")}
-      </div>
-      <p style="margin-top:10px;font-size:11px;color:#8a8267;">🌫️ Mystery achievements are hidden until you stumble into them — they pay out bonus XP on top of the normal trip reward.</p>
-      <div style="margin-top:10px;"><button class="btn secondary" id="openAchievementGallery" style="font-size:11.5px;padding:7px 14px;">🏆 View full achievement gallery</button></div>
-    </div>
-    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
-      <h3>Themes</h3>
-      <div class="home-panels" style="max-width:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
-        ${Object.entries(THEMES).map(([key,t])=>{
-          const unlocked = t.requirement();
-          const active = activeTheme===key;
-          return `
-          <div style="text-align:center;padding:12px;border:1px solid var(--line-soft);border-radius:10px;${active?'box-shadow:var(--glow-teal);border-color:var(--teal);':''}">
-            <div style="display:flex;justify-content:center;gap:4px;margin-bottom:8px;">
-              ${t.swatch.map(c=>`<span style="width:16px;height:16px;border-radius:50%;background:${c};display:inline-block;border:1px solid rgba(0,0,0,.15);"></span>`).join("")}
-            </div>
-            <div style="font-weight:700;font-size:12px;margin-bottom:6px;">${t.label}</div>
-            ${unlocked
-              ? `<button class="btn ${active?'':'secondary'}" data-theme-choice="${key}" style="font-size:11px;padding:6px 12px;" ${active?'disabled':''}>${active?'Active':'Apply'}</button>`
-              : `<div style="font-size:10.5px;color:#8a8267;">🔒 ${t.requirementLabel}</div>`}
-          </div>`;
-        }).join("")}
+  `;
+}
+
+function renderThemesOverlay(){
+  return `
+    <div class="overlay" id="themesOverlay">
+      <div class="drawer" style="width:560px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">🎨 Themes</h3>
+        <div class="home-panels" style="max-width:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px;">
+          ${Object.entries(THEMES).map(([key,t])=>{
+            const unlocked = t.requirement();
+            const active = activeTheme===key;
+            return `
+            <div style="text-align:center;padding:12px;border:1px solid var(--line-soft);border-radius:10px;${active?'box-shadow:var(--glow-teal);border-color:var(--teal);':''}">
+              <div style="display:flex;justify-content:center;gap:4px;margin-bottom:8px;">
+                ${t.swatch.map(c=>`<span style="width:16px;height:16px;border-radius:50%;background:${c};display:inline-block;border:1px solid rgba(0,0,0,.15);"></span>`).join("")}
+              </div>
+              <div style="font-weight:700;font-size:12px;margin-bottom:6px;">${t.label}</div>
+              ${unlocked
+                ? `<button class="btn ${active?'':'secondary'}" data-theme-choice="${key}" style="font-size:11px;padding:6px 12px;" ${active?'disabled':''}>${active?'Active':'Apply'}</button>`
+                : `<div style="font-size:10.5px;color:#8a8267;">🔒 ${t.requirementLabel}</div>`}
+            </div>`;
+          }).join("")}
+        </div>
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeThemesPanel">Close</button></div>
       </div>
     </div>
-    ${tripLog.length ? `
-    <div class="home-panel" style="max-width:760px;margin:18px auto 0;">
-      <h3>Best trips this session</h3>
-      ${tripLog.slice(0,10).map((t,i)=>`
-        <div class="log-row">
-          <span class="log-rank">#${i+1}</span>
-          <span class="log-name">${t.familyName}</span>
-          <span class="log-meta">${t.archetype} · ${t.size} guests · ${t.tripLengthDays}d</span>
-          <span class="log-grade">${t.grade}</span>
-          <span class="log-score">${t.score}/100</span>
-        </div>`).join("")}
-      <div style="margin-top:12px;"><button class="btn secondary" id="openStatsHistory" style="font-size:11.5px;padding:7px 14px;">📊 Full stats &amp; history</button></div>
-    </div>` : ''}
+  `;
+}
+
+function renderSettingsOverlay(){
+  return `
+    <div class="overlay" id="settingsOverlay">
+      <div class="drawer" style="width:520px;">
+        <h3 style="font-family:var(--serif);font-size:20px;text-transform:none;letter-spacing:0;">⚙️ Settings</h3>
+        <div class="sans" style="margin-top:14px;">
+          <div class="sound-row">
+            <label><input type="checkbox" id="sfxToggle" ${sound.sfxOn?'checked':''}> Sound effects</label>
+          </div>
+          <div class="sound-row">
+            <label><input type="checkbox" id="musicToggle" ${sound.musicOn?'checked':''}> Background music</label>
+          </div>
+          <div class="sound-row">
+            <label>Volume</label>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="${sound.volume}">
+          </div>
+          <p style="margin-top:14px;font-size:12px;color:#8a8267;">Want to swap in your own music or sound effects? Open this file in a text editor, find <code>MUSIC_FILE_PATH</code> and <code>SFX_FILES</code> near the top of the script, and point them at your own mp3 files sitting in the same folder as this HTML file.</p>
+        </div>
+        <div class="sans" style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;">
+          <p style="font-size:12px;color:#8a8267;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <span>💾 Progress auto-saves in this browser after every trip — no account needed.</span>
+            <button class="btn secondary" id="resetSaveBtn" style="font-size:10.5px;padding:5px 10px;white-space:nowrap;">Reset save</button>
+          </p>
+        </div>
+        <div class="sans" style="margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;font-size:11.5px;color:#8a8267;line-height:1.6;">
+          <b style="display:block;color:#5b5646;margin-bottom:4px;">Credits</b>
+          <p>Designed &amp; built by: you, with Claude (Anthropic) as coding partner.</p>
+          <p>All ride, hotel, and restaurant names belong to Disney and are used here purely for a personal, non-commercial fan-made planning game. Pricing is illustrative and approximate, not official.</p>
+          <p>Sound effects and music are generated live in your browser — no external files, nothing to download.</p>
+        </div>
+        <div style="margin-top:18px;text-align:right;"><button class="btn" id="closeSettingsPanel">Close</button></div>
+      </div>
+    </div>
   `;
 }
 
@@ -3123,6 +3129,18 @@ function wireEvents(){
   if(closeLeaderboard) closeLeaderboard.onclick = ()=>{ showLeaderboard = false; render(); };
   const refreshLeaderboard = document.getElementById("refreshLeaderboard");
   if(refreshLeaderboard) refreshLeaderboard.onclick = ()=>{ loadLeaderboard(); };
+  const openOnlineH2HPanel = document.getElementById("openOnlineH2HPanel");
+  if(openOnlineH2HPanel) openOnlineH2HPanel.onclick = ()=>{ showOnlineH2HPanel = true; render(); };
+  const closeOnlineH2HPanel = document.getElementById("closeOnlineH2HPanel");
+  if(closeOnlineH2HPanel) closeOnlineH2HPanel.onclick = ()=>{ showOnlineH2HPanel = false; render(); };
+  const openThemesPanel = document.getElementById("openThemesPanel");
+  if(openThemesPanel) openThemesPanel.onclick = ()=>{ showThemesPanel = true; render(); };
+  const closeThemesPanel = document.getElementById("closeThemesPanel");
+  if(closeThemesPanel) closeThemesPanel.onclick = ()=>{ showThemesPanel = false; render(); };
+  const openSettingsPanel = document.getElementById("openSettingsPanel");
+  if(openSettingsPanel) openSettingsPanel.onclick = ()=>{ showSettingsPanel = true; render(); };
+  const closeSettingsPanel = document.getElementById("closeSettingsPanel");
+  if(closeSettingsPanel) closeSettingsPanel.onclick = ()=>{ showSettingsPanel = false; render(); };
   const playerNameInput = document.getElementById("playerNameInput");
   if(playerNameInput) playerNameInput.oninput = (e)=>{
     playerName = e.target.value;
