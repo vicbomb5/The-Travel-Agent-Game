@@ -939,6 +939,56 @@ function todayDateString(){
   const d = new Date();
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
+function yesterdayDateString(){
+  const d = new Date();
+  d.setDate(d.getDate()-1);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+// ---- Daily Challenge: participation streak (tracked locally per-browser, not on the leaderboard) ----
+let dailyStreak = (function(){ try { return parseInt(localStorage.getItem('sunshineco_dailyStreak')||'0',10)||0; } catch(e){ return 0; } })();
+let lastDailyDate = (function(){ try { return localStorage.getItem('sunshineco_lastDailyDate')||null; } catch(e){ return null; } })();
+function recordDailyChallengeCompletion(){
+  const today = todayDateString();
+  if(lastDailyDate===today) return; // already counted today
+  dailyStreak = (lastDailyDate===yesterdayDateString()) ? dailyStreak+1 : 1;
+  lastDailyDate = today;
+  try {
+    localStorage.setItem('sunshineco_dailyStreak', String(dailyStreak));
+    localStorage.setItem('sunshineco_lastDailyDate', lastDailyDate);
+  } catch(e){}
+}
+function currentDisplayStreak(){
+  // If today's or yesterday's play is missing, the streak has lapsed — show 0 until they play again,
+  // without overwriting the saved value (so a late finish today can still continue it).
+  const today = todayDateString();
+  if(lastDailyDate===today || lastDailyDate===yesterdayDateString()) return dailyStreak;
+  return 0;
+}
+
+// ---- Daily Challenge: yesterday's winner callout ----
+let yesterdayWinnerState = { loading:false, fetchedFor:null, entry:null, error:null };
+function maybeLoadYesterdayWinner(){
+  const today = todayDateString();
+  if(yesterdayWinnerState.fetchedFor===today || yesterdayWinnerState.loading) return;
+  yesterdayWinnerState.loading = true;
+  if(!window.firebaseGetDailyChallengeLeaderboard){
+    yesterdayWinnerState = { loading:false, fetchedFor:today, entry:null, error:null };
+    return;
+  }
+  window.firebaseGetDailyChallengeLeaderboard(yesterdayDateString()).then(res=>{
+    yesterdayWinnerState = {
+      loading:false, fetchedFor:today,
+      entry: (res.ok && res.rows.length) ? res.rows[0] : null,
+      error: res.ok ? null : (res.error||"unknown error"),
+    };
+    render();
+  }).catch(e=>{
+    yesterdayWinnerState = { loading:false, fetchedFor:today, entry:null, error:e.message };
+    render();
+  });
+}
+
 function startDailyChallenge(){
   const dateStr = todayDateString();
   const seed = hashStringToSeed("sunshineco-daily-"+dateStr);
@@ -2104,6 +2154,7 @@ function renderOnboardingOverlay(){
 }
 function renderHome(){
   const xpPct = Math.min(100, Math.round((career.xp/xpForNextLevel())*100));
+  maybeLoadYesterdayWinner();
   return `
     <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">Est. for agents who plan the impossible</span></div>
     <div class="home-hero">
@@ -2169,6 +2220,8 @@ function renderHome(){
     <div class="home-panel" style="max-width:760px;margin:0 auto 24px;">
       <h3>☀️ Today's Challenge</h3>
       <p style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">Everyone playing today gets the exact same client — see who plans it best.</p>
+      ${currentDisplayStreak()>0 ? `<p class="sans" style="font-size:12.5px;color:var(--teal-dark);font-weight:600;margin-bottom:6px;">🔥 ${currentDisplayStreak()}-day streak — play today to keep it going!</p>` : ''}
+      ${yesterdayWinnerState.entry ? `<p class="sans" style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">🏆 Yesterday's winner: <b>${yesterdayWinnerState.entry.playerName||"Anonymous Agent"}</b> — ${yesterdayWinnerState.entry.score}/100</p>` : (yesterdayWinnerState.fetchedFor===todayDateString() && !yesterdayWinnerState.loading ? `<p class="sans" style="font-size:11.5px;color:#8a8267;margin-bottom:8px;">No one played yesterday's challenge.</p>` : '')}
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn" id="playDailyChallenge" style="font-size:12.5px;padding:9px 16px;">Play Today's Challenge</button>
         <button class="btn secondary" id="openDailyLeaderboard" style="font-size:12.5px;padding:9px 16px;">🏆 Today's leaderboard</button>
@@ -3189,7 +3242,11 @@ function wireEvents(){
       grade: lastReportData.grade,
       score: lastReportData.final,
     }).then(res=>{
-      if(res.ok){ state.dailySubmitted = true; state.dailySubmitMsg = "Submitted! Check today's leaderboard from the home screen."; }
+      if(res.ok){
+        state.dailySubmitted = true;
+        state.dailySubmitMsg = "Submitted! Check today's leaderboard from the home screen.";
+        recordDailyChallengeCompletion();
+      }
       else { state.dailySubmitMsg = "Couldn't submit — try again in a moment."; }
       render();
     }).catch(()=>{
