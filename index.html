@@ -1968,20 +1968,22 @@ function createOnlineRoom(){
     onlineH2HUi.status = "Couldn't connect to the server right now.";
     render(); return;
   }
-  onlineH2HUi.status = "Creating room…";
-  render();
   newGame(); // builds a fresh client + trip state, same as any normal trip
+  onlineH2H = { code:null, role:"host", opponentName:null, submitted:false }; // code:null = still generating
+  onlineH2HUi = { mode:null, joinCode:"", status:null };
+  state.view = "onlineRoomWaiting"; // switch away from the client screen BEFORE the network call, so it never flashes
+  render();
   const seedJson = JSON.stringify(state);
   window.firebaseCreateH2HRoom(seedJson, playerName || "Agent 1").then(res=>{
     if(res.ok){
       onlineH2H = { code:res.code, role:"host", opponentName:null, submitted:false };
-      onlineH2HUi = { mode:null, joinCode:"", status:null };
-      state.view = "onlineRoomWaiting";
     } else {
+      onlineH2H = null;
+      state.view = "client";
       onlineH2HUi.status = "Couldn't create a room — try again.";
     }
     render();
-  }).catch(()=>{ onlineH2HUi.status = "Couldn't create a room — try again."; render(); });
+  }).catch(()=>{ onlineH2H = null; state.view = "client"; onlineH2HUi.status = "Couldn't create a room — try again."; render(); });
 }
 
 function joinOnlineRoom(code){
@@ -2313,7 +2315,10 @@ function renderOnlineRoomWaitingScreen(){
   return `
     <div class="brand"><div class="brand-left"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="18" fill="none" stroke="#0B3438" stroke-width="1.4"/><g stroke="#B87D1E" stroke-width="1.6" stroke-linecap="round"><line x1="20" y1="3" x2="20" y2="9"/><line x1="20" y1="31" x2="20" y2="37"/><line x1="3" y1="20" x2="9" y2="20"/><line x1="31" y1="20" x2="37" y2="20"/><line x1="7.5" y1="7.5" x2="11.5" y2="11.5"/><line x1="28.5" y1="28.5" x2="32.5" y2="32.5"/><line x1="7.5" y1="32.5" x2="11.5" y2="28.5"/><line x1="28.5" y1="11.5" x2="32.5" y2="7.5"/></g><circle cx="20" cy="20" r="10" fill="#0B3438"/><path d="M20 13.5 L22 18.5 L27.5 18.5 L23.2 21.8 L24.8 27 L20 23.8 L15.2 27 L16.8 21.8 L12.5 18.5 L18 18.5 Z" fill="#D89A2E"/></svg><h1><a href="#" id="goHome" style="color:inherit;text-decoration:none;">Sunshine &amp; Co. Vacation Bureau</a></h1></div><span class="tag">🌐 Online Head-to-Head</span></div>
     <div class="report" style="text-align:center;max-width:480px;">
-      ${isHost ? `
+      ${!onlineH2H.code ? `
+        <h2 style="font-family:var(--serif);font-size:22px;margin-bottom:6px;">Creating your room…</h2>
+        <p class="sans" style="font-size:13.5px;color:#8a8267;">Just a moment.</p>
+      ` : isHost ? `
         <h2 style="font-family:var(--serif);font-size:22px;margin-bottom:6px;">Room created!</h2>
         <p class="sans" style="font-size:13.5px;color:#5b5646;">Share this code with whoever you're competing against:</p>
         <div style="font-family:var(--serif);font-size:44px;font-weight:700;letter-spacing:8px;color:var(--teal-dark);margin:16px 0;">${onlineH2H.code}</div>
@@ -2324,7 +2329,7 @@ function renderOnlineRoomWaitingScreen(){
         <div style="font-family:var(--serif);font-size:32px;font-weight:700;letter-spacing:6px;color:var(--teal-dark);margin:16px 0;">${onlineH2H.code}</div>
         <p class="sans" style="font-size:12.5px;color:#8a8267;">You'll both plan for the exact same client, independently. When you're ready, click below to see the client and start planning.</p>
       `}
-      <div style="margin-top:20px;"><button class="btn" id="startFromRoomBtn">Start →</button></div>
+      <div style="margin-top:20px;">${onlineH2H.code ? `<button class="btn" id="startFromRoomBtn">Start →</button>` : ''}</div>
     </div>
   `;
 }
